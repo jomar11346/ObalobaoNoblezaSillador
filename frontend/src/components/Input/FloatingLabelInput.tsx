@@ -4,7 +4,7 @@ interface FloatingLabelInputProps {
   label: string;
   type: "text" | "date" | "password";
   name: string;
-  value?: string | any;
+  value?: string | number;
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
   newLabelClassName?: string;
   labelClassName?: string;

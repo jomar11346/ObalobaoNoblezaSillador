@@ -1,7 +1,12 @@
+import { type FC } from "react";
 import { Link } from "react-router-dom";
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/Table"
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/Table";
 
-const GenderList = () => {
+interface GenderListProps {
+  refreshKey?: number;
+}
+
+const GenderList: FC<GenderListProps> = ({ refreshKey = 0 }) => {
     const genders = [
         {
             gender_id: 1,
@@ -75,7 +80,10 @@ const GenderList = () => {
         },
     ]
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div
+      key={refreshKey}
+      className="overflow-hidden rounded-lg border border-gray-200 bg-white"
+    >
       <div className="max-w-full max-h-[calc(100vh)] overflow-x-auto">
         <Table>
           <TableHeader className="border-b border-gray-200 bg-blue-600 sticky top-0 text-white text-xs">
