@@ -28,6 +28,14 @@ const UserService = {
             throw error;
         }
     },
+    destroyUser: async (userId: string | number) => {
+        try {
+            const response = await AxiosInstance.delete(`/user/destroyUser/${userId}`);
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    },
 };
 
 export default UserService;

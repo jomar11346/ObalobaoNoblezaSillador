@@ -12,8 +12,9 @@ const LayoutContent = () => {
             <div>
                 <AppHeader />
             </div>
-            <div className="p-20 -mml-14 sm:ml-52">
-                <Outlet />
+            <div className="pt-20 pl-0 sm:pl-64 min-h-screen">
+                <div className="p-4 sm:p-6"><Outlet /></div>
+            
             </div>
         </>
     )
