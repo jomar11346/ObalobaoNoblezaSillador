@@ -1,10 +1,50 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useHeader } from "../contexts/HeaderContext";
 import { useSidebar } from "../contexts/SidebarContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useEffect, useState, type FormEvent } from "react";
 
 const AppHeader = () => {
-    const { isOpen, toggleUserMenu } = useHeader()
+    const { isOpen, toggleUserMenu } = useHeader();
     const { toggleSidebar } = useSidebar();
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleLogout = async (e: FormEvent) => {
+        try {
+            e.preventDefault();
+            setIsLoading(true);
+            await logout();
+            navigate('/');
+        } catch (error) {
+            console.error('Unexpected server error occurred during logging out:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleUserFullNameFormat = () => {
+        if (!user) return '';
+
+        let fullName = `${user.user.last_name}, ${user.user.first_name}`;
+
+        if (user.user.middle_name) {
+            fullName += ` ${user.user.middle_name.charAt(0)}.`;
+        }
+        if (user.user.suffix_name) {
+            fullName += ` ${user.user.suffix_name}`;
+        }
+
+        return fullName;
+    };
+
+    useEffect(() => {
+        if (user) {
+            handleUserFullNameFormat();
+        }
+    }, [user]);
 
     return (
         <>
@@ -23,13 +63,21 @@ const AppHeader = () => {
                                 onClick={toggleSidebar}
                                 className="sm:hidden text-heading bg-transparent box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 
                             focus:ring-neutral-tertiary font-medium leading-5 rounded-base text-sm p-2 focus:outline-none">
-
                                 <span className="sr-only">Open sidebar</span>
                                 <svg
                                     className="w-6 h-6"
                                     aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h10" />
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    fill="none"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        stroke="currentColor"
+                                        strokeLinecap="round"
+                                        strokeWidth="2"
+                                        d="M5 7h14M5 12h14M5 17h10"
+                                    />
                                 </svg>
                             </button>
                             <a href="https://flowbite.com" className="flex ms-2 md:me-24">
@@ -43,8 +91,7 @@ const AppHeader = () => {
                                     <button
                                         type="button"
                                         onClick={toggleUserMenu}
-                                        className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300
-                                    dark:focus:ring-gray-600"
+                                        className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
                                         aria-expanded="false"
                                         data-dropdown-toggle="dropdown-user"
                                     >
@@ -61,23 +108,21 @@ const AppHeader = () => {
                                     className={`absolute right-8 top-9 min-w-[200px] z-50 ${isOpen ? "block" : "hidden"} bg-neutral-primary-medium border border-default-medium rounded-base shadow-lg w-44`}
                                 >
                                     <div className="px-4 py-3 border-b border-default-medium" role="none">
-                                        <p
-                                            className="text-sm font-medium text-heading"
-                                            role="none">
-                                            Neil Sims
-                                        </p>
-                                        <p className="text-sm text-body truncate" role="none">
-                                            neil.sims@flowbite.com
+                                        <p className="text-sm font-medium text-heading" role="none">
+                                            {handleUserFullNameFormat()}
                                         </p>
                                     </div>
                                     <ul className="p-2 text-sm text-body font-medium" role="none">
                                         <li>
-                                            <Link
-                                                to="#"
-                                                className="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded"
-                                                role="menuitem">
-                                                Sign out
-                                            </Link>
+                                            <button
+                                            type="submit"
+                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white w-full text-start cursor-pointer disabled:cursor-not-allowed"
+                                                role="menuitem"
+                                                onClick={handleLogout}
+                                                disabled={isLoading}
+>
+                                                {isLoading ? 'Signing Out...' : 'Sign Out'}
+                                            </button>
                                         </li>
                                     </ul>
                                 </div>
@@ -86,9 +131,8 @@ const AppHeader = () => {
                     </div>
                 </div>
             </nav>
-
         </>
-    )
-}
+    );
+};
 
 export default AppHeader;

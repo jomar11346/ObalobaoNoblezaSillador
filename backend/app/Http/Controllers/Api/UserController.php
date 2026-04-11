@@ -83,12 +83,10 @@ class UserController extends Controller
         ], 200);
 
     }
-
-    public function destroyUser(User $user) {
+    public function destroyUser(Request $request, User $user) {
         $user->update([
             'is_deleted' => true
         ]);
-
         return response()->json([
             'message' => 'User Successfully Deleted.',
         ], 200);

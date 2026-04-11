@@ -38,8 +38,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::disableForeignKeyConstrainsts();
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('tbl_users');
-        Schema::enableForeignKeyConstriants();
+        Schema::enableForeignKeyConstraints();
     }
 };

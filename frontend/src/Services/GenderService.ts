@@ -20,7 +20,7 @@ const GenderService = {
   },
 
   destroyGender: async (genderId: string | number) => {
-    return AxiosInstance.put(`/gender/destroyGender/${genderId}`);
+    return AxiosInstance.delete(`/gender/destroyGender/${genderId}`);
   },
 };
 
