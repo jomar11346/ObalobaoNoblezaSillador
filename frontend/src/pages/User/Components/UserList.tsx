@@ -124,12 +124,14 @@ const UserList: FC<UserListProps> = ({ onAddUser, onEditUser, onDeleteUser, refr
                                 </div>
                             </div>
                         </caption>
-                        <TableHeader className="border-b border-gray-200 bg-blue-600 sticky top-0 text-white text-xs">
+                        <TableHeader className="border-b border-gray-200 bg-blue-600 sticky top-0 text-white text-xs z-10">
                             <TableRow>
                                 <TableCell isHeader className="px-5 py-3 font-medium text-center">
                                     No.
                                 </TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-start">
+                                <TableCell isHeader 
+                                colSpan={2}
+                                className="px-5 py-3 font-medium text-start">
                                     Full Name
                                 </TableCell>
                                 <TableCell isHeader className="px-5 py-3 font-medium text-start">
@@ -152,6 +154,16 @@ const UserList: FC<UserListProps> = ({ onAddUser, onEditUser, onDeleteUser, refr
                                     <TableRow className="hover:bg-gray-100" key={index}>
                                         <TableCell className="px-4 py-3 text-center">
                                             {index + 1}
+                                        </TableCell>
+                                        <TableCell className="py-3 item-end justify-end">
+                                            {user.profile_picture ? (
+                                                <img src={user.profile_picture} alt={handleUserFullNameFormat(user)} className="object-cover w-10 h-10 rounded-full" />
+                                            ) : (
+                                                <div className="relative inline-flex items-center justify-center w-10 h-10 text-center 
+                                                text-sm overflow-hidden bg-gray-300 rounded-full">
+                                                    <span className="font-medium text-gray-600">{`${user.last_name.charAt(0)}${user.first_name.charAt(0)}`}</span>
+                                                </div>
+                                            )}
                                         </TableCell>
                                         <TableCell className="px-4 py-3 text-start">
                                             {handleUserFullNameFormat(user)}
@@ -187,20 +199,20 @@ const UserList: FC<UserListProps> = ({ onAddUser, onEditUser, onDeleteUser, refr
                                 ))
                             ) :  !loadingUsers && (users.length ?? 0) <= 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="px-4 py-3 text-center font-medium">
+                                    <TableCell colSpan={7} className="px-4 py-3 text-center font-medium">
                                         No Records found
                                     </TableCell>
                                 </TableRow>
                             ) :(
                                 <TableRow>
-                                    <TableCell colSpan={6} className="px-4 py-3 text-center">
+                                    <TableCell colSpan={7} className="px-4 py-3 text-center">
                                         <Spinner size="md" />
                                     </TableCell>
                                 </TableRow>
                             )}
                             {loadingUsers && (users.length ?? 0) > 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="px-4 py-3 text-center">
+                                    <TableCell colSpan={7} className="px-4 py-3 text-center">
                                         <Spinner size="md" />
                                     </TableCell>
                                 </TableRow>

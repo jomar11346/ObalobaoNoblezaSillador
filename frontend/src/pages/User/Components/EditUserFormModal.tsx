@@ -2,6 +2,7 @@ import { useEffect, useState, type FC, type FormEvent } from "react";
 import CloseButton from "../../../components/Button/CloseButton";
 import SubmitButton from "../../../components/Button/SubmitButton";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
+import UploadInput from "../../../components/Input/UploadInput";
 import Modal from "../../../components/Modal";
 import FloatingLabelSelect from "../../../components/Select/FloatingLabelSelect";
 import GenderService from "../../../Services/GenderService";
@@ -26,6 +27,8 @@ const EditUserFormModal: FC<EditUserFormModalProps> = ({
 }) => {
     const [loadingGenders, setLoadingGenders] = useState(false)
     const [genders, setGenders] = useState<GenderColumns[]>([])
+    const [existingUserProfilePicture, setExistingUserProfilePicture] = useState<string | null>(null)
+    const [editUserProfilePicture, setEditUserProfilePicture] = useState<File | null>(null)
 
     const [loadingUpdate, setLoadingUpdate] = useState(false)
     const [firstName, setFirstName] = useState("")
@@ -42,19 +45,28 @@ const EditUserFormModal: FC<EditUserFormModalProps> = ({
         try{
             setLoadingUpdate(true)
 
-            const payload = {
-                first_name: firstName,
-                middle_name: middleName,
-                last_name: lastName,
-                suffix_name: suffixName,
-                gender: gender,
-                birth_date: birthdate,
-                username: username
-            };
+           const formData = new FormData()
+            formData.append("_method", "PUT");
+           
+            if (editUserProfilePicture) {
+                formData.append('edit_user_profile_picture', editUserProfilePicture);
+            } else if (user?.profile_picture && !existingUserProfilePicture) {
+                formData.append('remove_profile_picture', '1');
+            }
 
-            const res = await UserService.updateUser(user?.user_id!, payload);
+            formData.append('first_name', firstName);
+            formData.append('middle_name', middleName || "");
+            formData.append('last_name', lastName);
+            formData.append('suffix_name', suffixName || "");
+            formData.append('gender', gender);
+            formData.append('birth_date', birthdate);
+            formData.append('username', username);
+
+            const res = await UserService.updateUser(user?.user_id!, formData);
 
             if(res.status === 200) {
+                setExistingUserProfilePicture(res.data.user.user_profile_picture ? res.data.user.user_profile_picture : null);
+                setEditUserProfilePicture(null);
                 setFirstName(res.data.user.first_name);
                 setMiddleName(res.data.user.middle_name ?? "");
                 setLastName(res.data.user.last_name);
@@ -122,6 +134,10 @@ const EditUserFormModal: FC<EditUserFormModalProps> = ({
 useEffect(() => {
     if (isOpen) {
         if (user) {
+            setEditUserProfilePicture(null);
+
+            setExistingUserProfilePicture(user.profile_picture ? user.profile_picture : null);
+
             setFirstName(user.first_name);
             setMiddleName(user.middle_name ?? "");
             setLastName(user.last_name);
@@ -145,6 +161,17 @@ useEffect(() => {
                 <h1 className="text-2xl border-b border-gray-100 p-4 font-semibold mb-4">
                     Edit User Form
                 </h1>
+                <div className="mb-4">
+                    <UploadInput 
+                    label="Profile Picture" 
+                    name="edit_user_profile_picture" 
+                    value={editUserProfilePicture}
+                    onChange={setEditUserProfilePicture}
+                    onRemoveExistingImageUrl={() => setExistingUserProfilePicture(null)}
+                    existingImageUrl={existingUserProfilePicture}
+                    errors={errors.edit_user_profile_picture}
+                /></div>
+                
                 <div className="grid grid-cols-2 gap-4 border-b border-gray-100 mb-4">
                     <div className="col-span-2 md:col-span-1">
                         <div className="mb-4">
