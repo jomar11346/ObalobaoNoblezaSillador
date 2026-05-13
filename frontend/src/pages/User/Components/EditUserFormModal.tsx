@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC, type FormEvent } from "react";
+import { useEffect, useState, type FC, type FormEvent, type ChangeEvent } from "react";
 import CloseButton from "../../../components/Button/CloseButton";
 import SubmitButton from "../../../components/Button/SubmitButton";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
@@ -40,10 +40,51 @@ const EditUserFormModal: FC<EditUserFormModalProps> = ({
     const [username, setUsername] = useState("")
     const [errors, setErrors] = useState<UserFieldErrors>({})
 
+    const clearFieldError = (field: keyof UserFieldErrors) => {
+        if (errors[field]?.length) {
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                [field]: undefined,
+            }));
+        }
+    };
+
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+
+        if (name === "first_name") setFirstName(value);
+        if (name === "middle_name") setMiddleName(value);
+        if (name === "last_name") setLastName(value);
+        if (name === "suffix_name") setSuffixName(value);
+        if (name === "birth_date") setBirthDate(value);
+        if (name === "username") setUsername(value);
+
+        clearFieldError(name as keyof UserFieldErrors);
+    };
+
+    const handleGenderChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        setGender(e.target.value);
+        clearFieldError("gender");
+    };
+
     const handleUpdateUser = async (e: FormEvent) => {
         e.preventDefault()
         try{
+            const validationErrors: UserFieldErrors = {};
+
+            if (!firstName.trim()) validationErrors.first_name = ["The first name field is required."];
+            if (!lastName.trim()) validationErrors.last_name = ["The last name field is required."];
+            if (!gender.trim()) validationErrors.gender = ["The gender field is required."];
+            if (!birthdate.trim()) validationErrors.birth_date = ["The birth date field is required."];
+            if (!username.trim()) validationErrors.username = ["The username field is required."];
+
+            if (Object.keys(validationErrors).length > 0) {
+                setErrors(validationErrors);
+                return;
+            }
+
             setLoadingUpdate(true)
+            setErrors({});
 
            const formData = new FormData()
             formData.append("_method", "PUT");
@@ -157,7 +198,7 @@ useEffect(() => {
   return (
     <>
      <Modal isOpen={isOpen} onClose={onClose} showCloseButton>
-            <form onSubmit={handleUpdateUser}>
+            <form onSubmit={handleUpdateUser} noValidate>
                 <h1 className="text-2xl border-b border-gray-100 p-4 font-semibold mb-4">
                     Edit User Form
                 </h1>
@@ -180,7 +221,7 @@ useEffect(() => {
                              type="text" 
                              name="first_name" 
                              value={firstName} 
-                             onChange={(e) => setFirstName(e.target.value)} 
+                             onChange={handleInputChange} 
                              required 
                              autoFocus 
                              errors={errors.first_name} 
@@ -192,7 +233,7 @@ useEffect(() => {
                              type="text" 
                              name="middle_name" 
                              value={middleName} 
-                             onChange={(e) => setMiddleName(e.target.value)} 
+                             onChange={handleInputChange} 
                              errors={errors.middle_name} 
                             />
                         </div>
@@ -202,7 +243,7 @@ useEffect(() => {
                              type="text" 
                              name="last_name" 
                              value={lastName} 
-                             onChange={(e) => setLastName(e.target.value)} 
+                             onChange={handleInputChange} 
                              required 
                              errors={errors.last_name} 
                             />
@@ -213,7 +254,7 @@ useEffect(() => {
                              type="text" 
                              name="suffix_name" 
                              value={suffixName} 
-                             onChange={(e) => setSuffixName(e.target.value)} 
+                             onChange={handleInputChange} 
                              errors={errors.suffix_name} 
                             />
                         </div>
@@ -222,7 +263,7 @@ useEffect(() => {
                              label="Gender" 
                              name="gender" 
                              value={gender} 
-                             onChange={(e) => setGender(e.target.value)}
+                             onChange={handleGenderChange}
                              required 
                              errors={errors.gender}
                             >
@@ -248,7 +289,7 @@ useEffect(() => {
                              label="Birth Date" 
                              type="date" 
                              name="birth_date" 
-                             value={birthdate} onChange={(e) => setBirthDate(e.target.value)} 
+                             value={birthdate} onChange={handleInputChange} 
                              required 
                              errors={errors.birth_date} 
                             />
@@ -258,7 +299,7 @@ useEffect(() => {
                              label="Username" 
                              type="text" 
                              name="username" 
-                             value={username} onChange={(e) => setUsername(e.target.value)} 
+                             value={username} onChange={handleInputChange} 
                              required 
                              errors={errors.username} 
                             />

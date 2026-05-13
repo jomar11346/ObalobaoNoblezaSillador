@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import type { FormEvent } from "react";
 import { useState } from "react";
+import type { ChangeEvent } from "react";
 import SubmitButton from "../../../components/Button/SubmitButton";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
 import type { LoginCredentialsErrorFields } from "../../../interfaces/AuthInterface";
@@ -21,11 +22,46 @@ const LoginForm: FC<LoginFormProps> = ({ message }) => {
     const { login } = useAuth();
     const navigate = useNavigate();
 
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+
+        if (name === "username") {
+            setUsername(value);
+        }
+
+        if (name === "password") {
+            setPassword(value);
+        }
+
+        if (error[name as keyof LoginCredentialsErrorFields]?.length) {
+            setError((prevError) => ({
+                ...prevError,
+                [name]: undefined,
+            }));
+        }
+    };
+
     const handleLogin = async (e: FormEvent) => {
         try {
             e.preventDefault();
+            const validationErrors: LoginCredentialsErrorFields = {};
+
+            if (!username.trim()) {
+                validationErrors.username = ["The username field is required."];
+            }
+
+            if (!password.trim()) {
+                validationErrors.password = ["The password field is required."];
+            }
+
+            if (Object.keys(validationErrors).length > 0) {
+                setError(validationErrors);
+                message("Please check your input", true);
+                return;
+            }
 
             setIsLoading(true);
+            setError({});
 
             await login(username, password);
             navigate('/genders');
@@ -47,14 +83,14 @@ const LoginForm: FC<LoginFormProps> = ({ message }) => {
 
   return (
     <>
-    <form onSubmit={handleLogin}>
+    <form onSubmit={handleLogin} noValidate>
          <div className="mb-4">
             <FloatingLabelInput
              label="Username" 
              type="text"
               name="username" 
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={handleInputChange}
               required 
               autoFocus
               errors={error.username}
@@ -66,7 +102,7 @@ const LoginForm: FC<LoginFormProps> = ({ message }) => {
              type="password" 
              name="password"
              value={password}
-             onChange={(e) => setPassword(e.target.value)}
+             onChange={handleInputChange}
              required
              errors={error.password}
              />
