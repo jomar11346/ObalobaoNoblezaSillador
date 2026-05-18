@@ -1,12 +1,13 @@
 import { useEffect } from "react";
-import AddGenderForm from "./components/AddGenderForm";
-import { GenderList } from "./components/GenderList";
+import AddFlowerForm from "./components/AddFlowerForm";
+import { FlowerList } from "./components/FlowerList";
 import ToastMessage from "../../components/ToastMessage/ToastMessage";
 import { useToastMessage } from "../../hooks/useToastMessage";
 import { useRefresh } from "../../hooks/useRefresh";
 import { useLocation } from "react-router-dom";
+import PageHeader from "../../components/Brand/PageHeader";
 
-const GenderMainPage = () => {
+const FlowerMainPage = () => {
   const location = useLocation();
 
   const {
@@ -19,7 +20,7 @@ const GenderMainPage = () => {
   const { refresh, handleRefresh } = useRefresh(false);
 
   useEffect(() => {
-    document.title = "Gender Main Page";
+    document.title = "Yui Blooms - Flowers";
   }, []);
 
   useEffect(() => {
@@ -37,16 +38,18 @@ const GenderMainPage = () => {
         isVisible={toastMessageIsVisible}
         onClose={closeToastMessage}
       />
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2 md:col-span-1">
-          <AddGenderForm onGenderAdded={showToastMessage} refreshKey={handleRefresh} />
-        </div>
-        <div className="col-span-2 md:col-span-1">
-          <GenderList refreshKey={refresh} />
-        </div>
+      <PageHeader title="Flowers" subtitle="Manage inventory, pricing, and product images." />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <section className="yb-panel p-5">
+          <h2 className="yb-eyebrow mb-4">Add flower</h2>
+          <AddFlowerForm onFlowerAdded={showToastMessage} refreshKey={handleRefresh} />
+        </section>
+        <section>
+          <FlowerList refreshKey={refresh} />
+        </section>
       </div>
     </>
   );
 };
 
-export default GenderMainPage;
+export default FlowerMainPage;

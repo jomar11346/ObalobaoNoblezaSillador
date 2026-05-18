@@ -104,7 +104,7 @@ const UserList: FC<UserListProps> = ({ onAddUser, onEditUser, onDeleteUser, refr
 
     return (
         <>
-            <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <div className="yb-table-wrap">
                 <div ref={tableRef} className="relative max-w-full max-h-[calc(100vh-8.5rem)] overflow-x-auto">
                     <Table>
                         <caption className="mb-4">
@@ -117,14 +117,14 @@ const UserList: FC<UserListProps> = ({ onAddUser, onEditUser, onDeleteUser, refr
                                              autoFocus />
                                             
                                     </div>
-                                    <button type="button" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg transition cursor-pointer"
+                                    <button type="button" className="yb-btn-primary"
                                         onClick={onAddUser}>
                                         Add User
                                     </button>
                                 </div>
                             </div>
                         </caption>
-                        <TableHeader className="border-b border-gray-200 bg-blue-600 sticky top-0 text-white text-xs z-10">
+                        <TableHeader className="yb-table-head sticky top-0 z-10">
                             <TableRow>
                                 <TableCell isHeader className="px-5 py-3 font-medium text-center">
                                     No.

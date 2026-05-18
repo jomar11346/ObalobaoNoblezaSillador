@@ -31,7 +31,7 @@ const Modal: FC<ModalProps> = ({
 
   const contentClasses = isFullScreen
     ? "relative w-full h-full rounded-lg bg-white flex flex-col"
-    : "relative w-full sm:max-w-md md:max-w-lg lg:max-w-2xl rounded-lg bg-white max-h[90vh] flex flex-col";
+    : "yb-modal-panel relative flex max-h-[90vh] w-full flex-col sm:max-w-md md:max-w-lg lg:max-w-2xl";
 
   useEffect(() => {
     if (isOpen) {
@@ -64,7 +64,7 @@ const Modal: FC<ModalProps> = ({
         onClick={onClose}
       >
         {!isFullScreen && (
-          <div className="fixed inset-0 w-full h-full bg-gray-400/50 backdrop-blur-lg" />
+          <div className="yb-modal-backdrop fixed inset-0 h-full w-full" />
         )}
         <div
           ref={modalRef}

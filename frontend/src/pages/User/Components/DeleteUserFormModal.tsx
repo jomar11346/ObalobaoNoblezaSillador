@@ -74,7 +74,7 @@ const DeleteUserFormModal: FC<DeleteUserFormModalProps> = ({
     return (
         <Modal isOpen={isOpen} onClose={onClose} showCloseButton>
             <form onSubmit={handleDestroyUser}>
-                <h1 className="text-2xl border-b border-gray-100 p-4 font-semibold mb-4">
+                <h1 className="yb-modal-title">
                     Delete User Form
                 </h1>
                 <div className="grid grid-cols-2 gap-4 border-b border-gray-100 mb-4">

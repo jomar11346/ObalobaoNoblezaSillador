@@ -6,6 +6,8 @@ import AddUserFormModal from "./Components/AddUserFormModal";
 import DeleteUserFormModal from "./Components/DeleteUserFormModal";
 import EditUserFormModal from "./Components/EditUserFormModal";
 import UserList from "./Components/UserList";
+import type { UserColumns } from "../../interfaces/UserInterface";
+import PageHeader from "../../components/Brand/PageHeader";
 
 const UserMainPage = () => {
     const { 
@@ -16,16 +18,16 @@ const UserMainPage = () => {
 
     const { 
         isOpen: isEditUserFormModalOpen, 
-        selectedUser: selectedUserForEdit, 
+        selectedItem: selectedUserForEdit, 
         openModal: openEditUserFormModal, 
         closeModal: closeEditUserFormModal,
-    } = useModal(false);
+    } = useModal<UserColumns>(false);
     const { 
         isOpen: isDeleteUserFormModalOpen, 
-        selectedUser: selectedUserForDelete, 
+        selectedItem: selectedUserForDelete, 
         openModal: openDeleteUserFormModal, 
         closeModal: closeDeleteUserFormModal,
-    } = useModal(false);
+    } = useModal<UserColumns>(false);
 
     const { 
         message: toastMessage, 
@@ -43,6 +45,7 @@ const UserMainPage = () => {
              isVisible={toastMessageIsVisible}
              onClose={closeToastMessage}
             />
+            <PageHeader title="Admin users" subtitle="Staff accounts for the Yui Blooms back office." />
             <AddUserFormModal
              onUserAdded={showToastMessage}
              refreshKey={handleRefresh}

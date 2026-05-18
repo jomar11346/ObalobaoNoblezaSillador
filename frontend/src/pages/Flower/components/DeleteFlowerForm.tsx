@@ -2,39 +2,36 @@ import { useEffect, useState, type FormEvent } from "react";
 import BackButton from "../../../components/Button/BackButton";
 import SubmitButton from "../../../components/Button/SubmitButton";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
-import GenderService from "../../../Services/GenderService";
+import FlowerService from "../../../Services/FlowerService";
 import Spinner from "../../../components/Spinner/Spinner";
 import { useNavigate, useParams } from "react-router-dom";
 
-const DeleteGenderForm = () => {
+const DeleteFlowerForm = () => {
     const [loadingGet, setLoadingGet] = useState(false);
     const [loadingDestroy, setLoadingDestroy] = useState(false);
-    const [gender, setGender] = useState("");
+    const [flower, setFlower] = useState<any>(null);
     const [loadFinished, setLoadFinished] = useState(false);
 
-    const { gender_id } = useParams();
+    const { flower_id } = useParams();
     const navigate = useNavigate();
 
-    const handleGender = async (genderId: string | number) => {
+    const handleFlower = async (flowerId: string | number) => {
         try {
             setLoadingGet(true);
 
-            const res = await GenderService.getGender(genderId);
+            const res = await FlowerService.getFlower(flowerId);
 
             if (res.status === 200) {
-                const existingGender = res.data?.gender?.gender;
-                if (typeof existingGender === "string") {
-                    setGender(existingGender);
-                }
+                setFlower(res.data?.flower);
             } else {
                 console.error(
-                    "Unexpected error status occured during getting gender:",
+                    "Unexpected error status occured during getting flower:",
                     res.status,
                 );
             }
         } catch (error) {
             console.error(
-                "Unexpected server error occured during getting gender: ",
+                "Unexpected server error occured during getting flower: ",
                 error,
             );
         } finally {
@@ -43,26 +40,26 @@ const DeleteGenderForm = () => {
         }
     };
 
-    const handleDestroyGender = async (e: FormEvent) => {
+    const handleDestroyFlower = async (e: FormEvent) => {
         e.preventDefault();
-        if (!gender_id) return;
+        if (!flower_id) return;
 
         try {
             setLoadingDestroy(true);
 
-            const res = await GenderService.destroyGender(gender_id);
+            const res = await FlowerService.destroyFlower(flower_id);
 
             if (res.status >= 200 && res.status < 300) {
-                navigate("/genders", { state: { message: res.data.message } });
+                navigate("/flowers", { state: { message: res.data.message } });
             } else {
                 console.error(
-                    "Unexpected status error occured during deleting gender: ",
+                    "Unexpected status error occured during deleting flower: ",
                     res.status,
                 );
             }
         } catch (error) {
             console.error(
-                "Unexpected server error occured during deleting gender: ",
+                "Unexpected server error occured during deleting flower: ",
                 error,
             );
         } finally {
@@ -71,25 +68,25 @@ const DeleteGenderForm = () => {
     };
 
     useEffect(() => {
-        if (gender_id) {
-            const parsedGenderId = Number(gender_id);
-            if (Number.isNaN(parsedGenderId)) {
+        if (flower_id) {
+            const parsedFlowerId = Number(flower_id);
+            if (Number.isNaN(parsedFlowerId)) {
                 console.error(
-                    "Unexpected error occured during getting gender: invalid gender id",
-                    gender_id,
+                    "Unexpected error occured during getting flower: invalid flower id",
+                    flower_id,
                 );
                 setLoadFinished(true);
                 return;
             }
-            handleGender(parsedGenderId);
+            handleFlower(parsedFlowerId);
         } else {
             console.error(
-                "Unexpected error occured during getting gender: ",
-                gender_id,
+                "Unexpected error occured during getting flower: ",
+                flower_id,
             );
             setLoadFinished(true);
         }
-    }, [gender_id]);
+    }, [flower_id]);
 
     return (
         <>
@@ -97,33 +94,38 @@ const DeleteGenderForm = () => {
                 <div className="flex justify-center items-center mt-52">
                     <Spinner size="lg" />
                 </div>
-            ) : gender ? (
-                <form onSubmit={handleDestroyGender}>
+            ) : flower ? (
+                <form onSubmit={handleDestroyFlower}>
                     <div className="mb-4">
                         <FloatingLabelInput
-                            label="Gender"
+                            label="Flower Name"
                             type="text"
-                            name="gender"
-                            value={gender}
+                            name="name"
+                            value={flower.name}
                             readOnly={true}
                             inputClassName="bg-gray-50 cursor-default"
                         />
                     </div>
+                    <div className="mb-4">
+                        {flower.image && (
+                            <img src={flower.image} alt={flower.name} className="w-32 h-32 object-cover rounded mb-2" />
+                        )}
+                    </div>
                     <div className="flex justify-end gap-2">
                         {!loadingDestroy && (
-                            <BackButton label="Back" path="/genders" />
+                            <BackButton label="Back" path="/flowers" />
                         )}
                         <SubmitButton
-                            label="Delete Gender"
+                            label="Delete Flower"
                             className="bg-red-600 hover:bg-red-700"
                             loading={loadingDestroy}
-                            loadingLabel="Deleting Gender..."
+                            loadingLabel="Deleting Flower..."
                         />
                     </div>
                 </form>
             ) : loadFinished ? (
                 <p className="mt-8 text-center text-sm text-gray-600">
-                    Gender not found or could not be loaded.
+                    Flower not found or could not be loaded.
                 </p>
             ) : (
                 <div className="flex justify-center items-center mt-52">
@@ -134,4 +136,4 @@ const DeleteGenderForm = () => {
     );
 };
 
-export default DeleteGenderForm;
+export default DeleteFlowerForm;

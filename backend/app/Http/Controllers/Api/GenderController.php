@@ -8,63 +8,13 @@ use Illuminate\Http\Request;
 
 class GenderController extends Controller
 {
-    public function loadGenders() {
+    public function loadGenders()
+    {
         $genders = Gender::where('tbl_genders.is_deleted', false)
             ->get();
 
-            return response()->json([
-                'genders' => $genders
-            ], 200);
-    }
-
-    public function storeGender(Request $request)
-    {
-        $validated = $request->validate([
-            'gender' => ['required', 'min:3', 'max:30']
-        ]);
-
-        Gender::create([
-            'gender' => $validated['gender']
-        ]);
-
         return response()->json([
-            'message' => 'Gender Successfully Saved.'
-        ], 200);
-    }
-
-    public function getGender($genderID) {
-        $gender = Gender::find($genderID);
-
-        return response()->json([
-            'gender' => $gender,
-        ], 200);
-    }
-
-    public function updateGender(Request $request, Gender $gender)
-    {
-
-        $validated = $request->validate([
-            'gender' => ['required', 'min:3', 'max:30'],
-        ]);
-
-        $gender->update([
-            'gender' => $validated['gender'],
-        ]);
-
-        return response()->json([
-            'gender' => $gender->fresh(),
-            'message' => 'Gender Successfully Updated.',
-        ], 200);
-    }
-
-    public function destroyGender(Gender $gender)
-    {
-        $gender->update([
-            'is_deleted' => true
-        ]);
-
-        return response()->json([
-            'message' => 'Gender Successfully Deleted.',
+            'genders' => $genders
         ], 200);
     }
 }

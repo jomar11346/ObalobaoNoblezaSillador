@@ -6,7 +6,6 @@ export interface GenderColumns {
     updated_at: string;
 }
 
-
 export interface GenderFieldErrors {
   gender?: string[];
 }

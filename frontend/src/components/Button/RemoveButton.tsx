@@ -9,7 +9,7 @@ const RemoveButton: React.FC<RemoveButtonProps> = ({ label, className, newClassN
   return (
     <>
     <button type="button" className={newClassName ? newClassName : 
-        `px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium cursor-pointer rounded-lg shadow-lg ${className}`} onClick={onRemove}>
+        `yb-btn-primary ${className ?? ""}`} onClick={onRemove}>
       {label}
     </button>
     </>

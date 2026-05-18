@@ -1,52 +1,67 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useSidebar } from "../contexts/SidebarContext";
+import YuiBloomsLogo from "../assets/img/YuiBloomsLogo.png";
+import FacebookLink from "../components/Brand/FacebookLink";
 
 const AppSidebar = () => {
     const { isOpen, toggleSidebar } = useSidebar();
 
     const sidebarItems = [
-        {
-            path: '/genders',
-            text: 'Genders',
-        },
-        {
-            path: '/users',
-            text: 'Users',
-        }
-    ]
+        { path: "/dashboard", text: "Dashboard" },
+        { path: "/flowers", text: "Flowers" },
+        { path: "/customers", text: "Customers" },
+        { path: "/orders", text: "Orders" },
+        { path: "/users", text: "Users" },
+    ];
 
     return (
         <>
             {!isOpen && (
                 <div
-                    className="fixed inset-0 z-30 blur-lg sm:hidden"
+                    className="fixed inset-0 z-30 bg-[#2d2926]/20 sm:hidden"
                     onClick={toggleSidebar}
+                    aria-hidden
                 />
             )}
             <aside
                 id="logo-sidebar"
-                className={`fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform 
-                    ${isOpen ? "-translate-x-full" : "translate-x-0"}
-                bg-white border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700`}
+                className={`yb-sidebar fixed top-0 left-0 z-40 h-screen w-64 pt-16 transition-transform sm:translate-x-0 ${
+                    isOpen ? "-translate-x-full" : "translate-x-0"
+                }`}
                 aria-label="Sidebar"
             >
-                <div className="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
-                    <ul className="space-y-2 font-medium">
-                        {sidebarItems.map((sidebarItem, index) => (
-                            <li key={index}>
-                                <Link
-                                    to={sidebarItem.path}
-                                    className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-                                >
-                                    <span className="ms-3">{sidebarItem.text}</span>
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
+                <div className="yb-sidebar-brand hidden sm:block">
+                    <img
+                        src={YuiBloomsLogo}
+                        alt="Yui Blooms Flower Bar"
+                        className="mx-auto h-28 w-auto object-contain"
+                    />
+                    <p className="yb-eyebrow mt-3 text-center">Flower Bar</p>
+                </div>
+                <div className="flex h-[calc(100vh-4rem)] flex-col sm:h-[calc(100vh-12rem)]">
+                    <nav className="flex-1 overflow-y-auto px-2 py-4">
+                        <ul className="space-y-1">
+                            {sidebarItems.map((item) => (
+                                <li key={item.path}>
+                                    <NavLink
+                                        to={item.path}
+                                        className={({ isActive }) =>
+                                            `yb-nav-link ${isActive ? "yb-nav-link-active" : ""}`
+                                        }
+                                    >
+                                        {item.text}
+                                    </NavLink>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
+                    <div className="border-t border-[#2d2926] px-3 py-4">
+                        <FacebookLink className="w-full justify-center" />
+                    </div>
                 </div>
             </aside>
         </>
-    )
-}
+    );
+};
 
 export default AppSidebar;

@@ -6,29 +6,26 @@ import { HeaderProvider } from "../contexts/HeaderContext";
 
 const LayoutContent = () => {
     return (
-        <><div>
+        <div className="yb-shell">
             <AppSidebar />
+            <AppHeader />
+            <main className="min-h-screen pt-16 pl-0 sm:pl-64">
+                <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-8">
+                    <Outlet />
+                </div>
+            </main>
         </div>
-            <div>
-                <AppHeader />
-            </div>
-            <div className="pt-20 pl-0 sm:pl-64 min-h-screen">
-                <div className="p-4 sm:p-6"><Outlet /></div>
-            
-            </div>
-        </>
-    )
-}
+    );
+};
 
 const AppLayout = () => {
     return (
-        <><HeaderProvider>
+        <HeaderProvider>
             <SidebarProvider>
                 <LayoutContent />
             </SidebarProvider>
         </HeaderProvider>
-        </>
-    )
-}
+    );
+};
 
 export default AppLayout;

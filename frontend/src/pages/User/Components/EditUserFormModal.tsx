@@ -112,7 +112,7 @@ const EditUserFormModal: FC<EditUserFormModalProps> = ({
                 setMiddleName(res.data.user.middle_name ?? "");
                 setLastName(res.data.user.last_name);
                 setSuffixName(res.data.user.suffix_name ?? "");
-                setGender(res.data.user.gender_id);
+                setGender(String(res.data.user.gender_id));
                 setBirthDate(res.data.user.birth_date);
                 setUsername(res.data.user.username);
                 setErrors({});
@@ -199,7 +199,7 @@ useEffect(() => {
     <>
      <Modal isOpen={isOpen} onClose={onClose} showCloseButton>
             <form onSubmit={handleUpdateUser} noValidate>
-                <h1 className="text-2xl border-b border-gray-100 p-4 font-semibold mb-4">
+                <h1 className="yb-modal-title">
                     Edit User Form
                 </h1>
                 <div className="mb-4">

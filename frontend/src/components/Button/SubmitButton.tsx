@@ -22,7 +22,7 @@ const SubmitButton: FC<SubmitButtonProps> = ({
         type="submit"
         className={`${newClassName
           ? newClassName
-          : `inline-flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium cursor-pointer rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${className}`
+          : `yb-btn-primary ${className ?? ""}`
           }`}
         disabled={loading}
       >

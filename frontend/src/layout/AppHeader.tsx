@@ -2,131 +2,95 @@ import { Link, useNavigate } from "react-router-dom";
 import { useHeader } from "../contexts/HeaderContext";
 import { useSidebar } from "../contexts/SidebarContext";
 import { useAuth } from "../contexts/AuthContext";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
+import YuiBloomsLogo from "../assets/img/YuiBloomsLogo.png";
 
 const AppHeader = () => {
     const { isOpen, toggleUserMenu } = useHeader();
     const { toggleSidebar } = useSidebar();
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-
     const [isLoading, setIsLoading] = useState(false);
 
     const handleLogout = async (e: FormEvent) => {
+        e.preventDefault();
         try {
-            e.preventDefault();
             setIsLoading(true);
             await logout();
-            navigate('/');
+            navigate("/");
         } catch (error) {
-            console.error('Unexpected server error occurred during logging out:', error);
+            console.error("Unexpected server error occurred during logging out:", error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleUserFullNameFormat = () => {
-        if (!user) return '';
-
-        let fullName = `${user.user.last_name}, ${user.user.first_name}`;
-
-        if (user.user.middle_name) {
-            fullName += ` ${user.user.middle_name.charAt(0)}.`;
-        }
-        if (user.user.suffix_name) {
-            fullName += ` ${user.user.suffix_name}`;
-        }
-
-        return fullName;
+    const fullName = () => {
+        if (!user) return "";
+        let name = `${user.user.first_name} ${user.user.last_name}`;
+        if (user.user.suffix_name) name += ` ${user.user.suffix_name}`;
+        return name;
     };
 
-    useEffect(() => {
-        if (user) {
-            handleUserFullNameFormat();
-        }
-    }, [user]);
+    const initials = () => {
+        if (!user) return "";
+        const f = user.user.first_name?.charAt(0) ?? "";
+        const l = user.user.last_name?.charAt(0) ?? "";
+        return `${f}${l}`.toUpperCase();
+    };
 
     return (
         <>
             {isOpen && (
-                <div className="fixed inset-0 z-40" onClick={toggleUserMenu} />
+                <div className="fixed inset-0 z-40" onClick={toggleUserMenu} aria-hidden />
             )}
-            <nav className="fixed top-0 z-50 w-full bg-neutral-primary-soft border-b border-default">
-                <div className="px-3 py-3 lg:px-5 lg:pl-3">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center justify-start rtl:justify-end">
-                            <button
-                                data-drawer-target="top-bar-sidebar"
-                                data-drawer-toggle="top-bar-sidebar"
-                                aria-controls="top-bar-sidebar"
-                                type="button"
-                                onClick={toggleSidebar}
-                                className="sm:hidden text-heading bg-transparent box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 
-                            focus:ring-neutral-tertiary font-medium leading-5 rounded-base text-sm p-2 focus:outline-none">
-                                <span className="sr-only">Open sidebar</span>
-                                <svg
-                                    className="w-6 h-6"
-                                    aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    fill="none"
-                                    viewBox="0 0 24 24">
-                                    <path
-                                        stroke="currentColor"
-                                        strokeLinecap="round"
-                                        strokeWidth="2"
-                                        d="M5 7h14M5 12h14M5 17h10"
-                                    />
-                                </svg>
-                            </button>
-                            <a href="https://flowbite.com" className="flex ms-2 md:me-24">
-                                <img src="https://flowbite.com/docs/images/logo.svg" className="h-6 me-3" alt="FlowBite Logo" />
-                                <span className="self-center text-lg font-semibold whitespace-nowrap dark:text-white">Flowbite</span>
-                            </a>
-                        </div>
-                        <div className="flex items-center">
-                            <div className="flex items-center ms-3">
-                                <div>
-                                    <button
-                                        type="button"
-                                        onClick={toggleUserMenu}
-                                        className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                                        aria-expanded="false"
-                                        data-dropdown-toggle="dropdown-user"
-                                    >
-                                        <span className="sr-only">Open user menu</span>
-                                        <img
-                                            className="w-8 h-8 rounded-full"
-                                            src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                                            alt="user photo"
-                                        />
-                                    </button>
-                                </div>
-                                <div
-                                    id="dropdown-user"
-                                    className={`absolute right-8 top-9 min-w-[200px] z-50 ${isOpen ? "block" : "hidden"} bg-neutral-primary-medium border border-default-medium rounded-base shadow-lg w-44`}
-                                >
-                                    <div className="px-4 py-3 border-b border-default-medium" role="none">
-                                        <p className="text-sm font-medium text-heading" role="none">
-                                            {handleUserFullNameFormat()}
-                                        </p>
-                                    </div>
-                                    <ul className="p-2 text-sm text-body font-medium" role="none">
-                                        <li>
-                                            <button
-                                            type="submit"
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white w-full text-start cursor-pointer disabled:cursor-not-allowed"
-                                                role="menuitem"
-                                                onClick={handleLogout}
-                                                disabled={isLoading}
->
-                                                {isLoading ? 'Signing Out...' : 'Sign Out'}
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
+            <nav className="yb-header fixed top-0 z-50 w-full">
+                <div className="flex items-center justify-between px-4 py-3 lg:px-6">
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={toggleSidebar}
+                            className="p-2 text-[#2d2926] sm:hidden"
+                            aria-label="Open menu"
+                        >
+                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                <path strokeLinecap="round" d="M4 7h16M4 12h16M4 17h10" />
+                            </svg>
+                        </button>
+                        <Link to="/dashboard" className="flex items-center gap-3">
+                            <img
+                                src={YuiBloomsLogo}
+                                alt="Yui Blooms"
+                                className="h-9 w-auto object-contain sm:hidden"
+                            />
+                            <span className="yb-display hidden text-xl sm:inline">Yui Blooms</span>
+                        </Link>
+                    </div>
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={toggleUserMenu}
+                            className="yb-avatar"
+                            aria-expanded={isOpen}
+                            aria-label="Account menu"
+                        >
+                            {initials()}
+                        </button>
+                        <div
+                            className={`absolute right-0 top-11 z-50 min-w-[12rem] ${isOpen ? "block" : "hidden"} yb-dropdown`}
+                        >
+                            <div className="border-b border-[#2d2926] px-4 py-3">
+                                <p className="text-xs tracking-wide text-[#4a4541] uppercase">Signed in</p>
+                                <p className="mt-1 text-sm font-medium text-[#2d2926]">{fullName()}</p>
                             </div>
+                            <button
+                                type="button"
+                                className="w-full px-4 py-3 text-left text-sm text-[#2d2926] hover:bg-[#b8956c]/10 disabled:opacity-50"
+                                onClick={handleLogout}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? "Signing out…" : "Sign out"}
+                            </button>
                         </div>
                     </div>
                 </div>

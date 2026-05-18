@@ -64,7 +64,7 @@ const LoginForm: FC<LoginFormProps> = ({ message }) => {
             setError({});
 
             await login(username, password);
-            navigate('/genders');
+            navigate('/dashboard');
         } catch (error: any) {
            if (error.response && error.response.status === 401) {
             setError({});
