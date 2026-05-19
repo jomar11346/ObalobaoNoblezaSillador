@@ -1,8 +1,16 @@
+export type OrderStatus = 'Pending' | 'Confirmed' | 'Ready' | 'Completed' | 'Cancelled';
+
+export const NON_DELETABLE_ORDER_STATUSES: OrderStatus[] = ['Pending', 'Confirmed', 'Ready'];
+
+export function canDeleteOrder(status: OrderStatus): boolean {
+    return !NON_DELETABLE_ORDER_STATUSES.includes(status);
+}
+
 export interface OrderColumns {
     order_id: number;
     customer_id: number;
     total_amount: number;
-    status: 'Pending' | 'Confirmed' | 'Ready' | 'Completed' | 'Cancelled';
+    status: OrderStatus;
     order_date: string;
     is_deleted: boolean;
     created_at: string;

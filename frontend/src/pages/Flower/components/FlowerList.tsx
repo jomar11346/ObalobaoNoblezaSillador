@@ -58,9 +58,6 @@ export const FlowerList: FC<FlowerListProps> = ({ refreshKey }) => {
                   Stock
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 font-medium text-center">
-                  Category
-                </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-center">
                   Action
                 </TableCell>
               </TableRow>
@@ -68,7 +65,7 @@ export const FlowerList: FC<FlowerListProps> = ({ refreshKey }) => {
             <TableBody className="yb-table-body divide-y divide-[#2d2926]/10">
               {loadingFlowers ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="px-4 py-3 text-center">
+                  <TableCell colSpan={6} className="px-4 py-3 text-center">
                     <Spinner size="md" />
                   </TableCell>
                 </TableRow>
@@ -86,8 +83,7 @@ export const FlowerList: FC<FlowerListProps> = ({ refreshKey }) => {
                     <TableCell className="px-4 py-3 text-start">{flower.name}</TableCell>
                     <TableCell className="px-4 py-3 text-center">₱{parseFloat(String(flower.price)).toFixed(2)}</TableCell>
                     <TableCell className="px-4 py-3 text-center">{flower.stock_quantity}</TableCell>
-                    <TableCell className="px-4 py-3 text-center">{flower.category}</TableCell>
-                    <TableCell className="px-4 px-y text-center">
+                    <TableCell className="px-4 py-3 text-center">
                       <div className="flex justfy-center items-center gap-x-4">
                         <Link to={`/flower/edit/${flower.flower_id}`} className="yb-link">Edit</Link>
                         <Link to={`/flower/delete/${flower.flower_id}`} className="yb-link yb-link-danger">Delete</Link>

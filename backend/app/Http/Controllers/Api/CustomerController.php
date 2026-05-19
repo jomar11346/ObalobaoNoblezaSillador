@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
@@ -33,10 +34,10 @@ class CustomerController extends Controller
     public function storeCustomer(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'max:100'],
+            'name' => $this->nameRules(),
             'contact' => ['required', 'max:20'],
             'address' => ['required', 'max:255'],
-            'email' => ['nullable', 'email', 'max:100']
+            'email' => $this->emailRules(),
         ]);
 
         Customer::create([
@@ -54,10 +55,10 @@ class CustomerController extends Controller
     public function updateCustomer(Request $request, Customer $customer)
     {
         $validated = $request->validate([
-            'name' => ['required', 'max:100'],
+            'name' => $this->nameRules($customer->customer_id),
             'contact' => ['required', 'max:20'],
             'address' => ['required', 'max:255'],
-            'email' => ['nullable', 'email', 'max:100']
+            'email' => $this->emailRules($customer->customer_id),
         ]);
 
         $customer->update([
@@ -69,7 +70,7 @@ class CustomerController extends Controller
 
         return response()->json([
             'message' => 'Customer Successfully Updated.',
-            'customer' => $customer
+            'customer' => $customer->fresh()
         ], 200);
     }
 
@@ -82,5 +83,29 @@ class CustomerController extends Controller
         return response()->json([
             'message' => 'Customer Successfully Deleted.'
         ], 200);
+    }
+
+    private function nameRules(?int $customerId = null): array
+    {
+        $rule = Rule::unique('tbl_customers', 'name')
+            ->where(fn ($query) => $query->where('is_deleted', false));
+
+        if ($customerId !== null) {
+            $rule->ignore($customerId, 'customer_id');
+        }
+
+        return ['required', 'max:100', $rule];
+    }
+
+    private function emailRules(?int $customerId = null): array
+    {
+        $rule = Rule::unique('tbl_customers', 'email')
+            ->where(fn ($query) => $query->where('is_deleted', false));
+
+        if ($customerId !== null) {
+            $rule->ignore($customerId, 'customer_id');
+        }
+
+        return ['nullable', 'email', 'max:100', $rule];
     }
 }

@@ -51,6 +51,11 @@ const EditCustomerFormModal: FC<EditCustomerFormModalProps> = ({
     const handleUpdateCustomer = async (e: FormEvent) => {
         e.preventDefault()
         try{
+            if (!customer?.customer_id) {
+                console.error("Customer ID is missing.");
+                return;
+            }
+
             const validationErrors: CustomerFieldErrors = {};
 
             if (!name.trim()) validationErrors.name = ["The name field is required."];
@@ -67,12 +72,12 @@ const EditCustomerFormModal: FC<EditCustomerFormModalProps> = ({
 
            const formData = new FormData()
             formData.append("_method", "PUT");
-            formData.append('name', name);
-            formData.append('contact', contact);
-            formData.append('address', address);
-            if (email) formData.append('email', email);
+            formData.append('name', name.trim());
+            formData.append('contact', contact.trim());
+            formData.append('address', address.trim());
+            if (email.trim()) formData.append('email', email.trim());
 
-            const res = await CustomerService.updateCustomer(customer?.customer_id!, formData);
+            const res = await CustomerService.updateCustomer(customer.customer_id, formData);
 
             if(res.status === 200) {
                 setName(res.data.customer.name);
@@ -83,6 +88,7 @@ const EditCustomerFormModal: FC<EditCustomerFormModalProps> = ({
 
                 onCustomerUpdated(res.data.message)
                 refreshKey();
+                onClose();
             } else {
                 console.error(
                     "Unexpected status error occurred during updating customer:", 

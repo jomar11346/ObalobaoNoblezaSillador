@@ -44,10 +44,15 @@ const EditOrderFormModal: FC<EditOrderFormModalProps> = ({
                 );
             }
         } catch(error: any) {
-            console.error(
-                "Unexpected server error occurred during updating order:", 
-                error
-            );
+            const message = error.response?.data?.message;
+            if (error.response?.status === 400 && message) {
+                onOrderUpdated(message);
+            } else {
+                console.error(
+                    "Unexpected server error occurred during updating order:", 
+                    error
+                );
+            }
         } finally {
             setLoadingUpdate(false);
         }

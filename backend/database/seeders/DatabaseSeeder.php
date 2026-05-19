@@ -48,9 +48,9 @@ class DatabaseSeeder extends Seeder
     User::factory(100)->create();
 
         Flower::insert([
-            ['name' => 'Red Roses Bouquet', 'price' => 599.00, 'stock_quantity' => 25, 'description' => 'Classic red roses', 'category' => 'Bouquet', 'is_deleted' => false, 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Sunflower Bundle', 'price' => 349.00, 'stock_quantity' => 8, 'description' => 'Bright sunflowers', 'category' => 'Bundle', 'is_deleted' => false, 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Lily Arrangement', 'price' => 449.00, 'stock_quantity' => 15, 'description' => 'Elegant white lilies', 'category' => 'Arrangement', 'is_deleted' => false, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Red Roses Bouquet', 'price' => 599.00, 'stock_quantity' => 25, 'is_deleted' => false, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Sunflower Bundle', 'price' => 349.00, 'stock_quantity' => 8, 'is_deleted' => false, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Lily Arrangement', 'price' => 449.00, 'stock_quantity' => 15, 'is_deleted' => false, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         Customer::insert([

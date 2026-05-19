@@ -17,9 +17,7 @@ class Flower extends Model
         'name',
         'price',
         'stock_quantity',
-        'description',
         'image',
-        'category',
         'is_deleted',
     ];
 

@@ -16,8 +16,6 @@ const AddFlowerForm: FC<AddFlowerFormProps> = ({ onFlowerAdded, refreshKey }) =>
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [stockQuantity, setStockQuantity] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [errors, setErrors] = useState<FlowerFieldErrors>({});
 
@@ -44,8 +42,6 @@ const AddFlowerForm: FC<AddFlowerFormProps> = ({ onFlowerAdded, refreshKey }) =>
       formData.append('name', name);
       formData.append('price', price);
       formData.append('stock_quantity', stockQuantity);
-      formData.append('category', category);
-      if (description) formData.append('description', description);
       if (image) formData.append('image', image);
 
       const res = await FlowerService.storeFlower(formData);
@@ -54,8 +50,6 @@ const AddFlowerForm: FC<AddFlowerFormProps> = ({ onFlowerAdded, refreshKey }) =>
         setName("");
         setPrice("");
         setStockQuantity("");
-        setDescription("");
-        setCategory("");
         setImage(null);
         setErrors({});
         onFlowerAdded(res.data.message);
@@ -122,26 +116,6 @@ const AddFlowerForm: FC<AddFlowerFormProps> = ({ onFlowerAdded, refreshKey }) =>
             value={stockQuantity}
             onChange={(e) => setStockQuantity(e.target.value)}
             errors={errors.stock_quantity}
-          />
-        </div>
-        <div className="mb-4">
-          <FloatingLabelInput
-            label="Category"
-            type="text"
-            name="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            errors={errors.category}
-          />
-        </div>
-        <div className="mb-4">
-          <FloatingLabelInput
-            label="Description"
-            type="text"
-            name="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            errors={errors.description}
           />
         </div>
         <div className="mb-4">

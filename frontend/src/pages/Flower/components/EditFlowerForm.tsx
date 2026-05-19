@@ -18,8 +18,6 @@ const EditFlowerForm: FC<EditFlowerFromProps> = ({ onFlowerUpdated }) => {
     const [name, setName] = useState("");
     const [price, setPrice] = useState("");
     const [stockQuantity, setStockQuantity] = useState("");
-    const [description, setDescription] = useState("");
-    const [category, setCategory] = useState("");
     const [image, setImage] = useState<File | null>(null);
     const [existingImage, setExistingImage] = useState<string>("");
     const [removeImage, setRemoveImage] = useState("0");
@@ -39,8 +37,6 @@ const EditFlowerForm: FC<EditFlowerFromProps> = ({ onFlowerUpdated }) => {
                     setName(flower.name || "")
                     setPrice(String(flower.price || ""))
                     setStockQuantity(String(flower.stock_quantity || ""))
-                    setDescription(flower.description || "")
-                    setCategory(flower.category || "")
                     setExistingImage(flower.image || "")
                 }
             } else {
@@ -76,8 +72,6 @@ const EditFlowerForm: FC<EditFlowerFromProps> = ({ onFlowerUpdated }) => {
             formData.append('name', name);
             formData.append('price', price);
             formData.append('stock_quantity', stockQuantity);
-            formData.append('category', category);
-            if (description) formData.append('description', description);
             if (image) formData.append('image', image);
             formData.append('remove_image', removeImage);
 
@@ -90,9 +84,8 @@ const EditFlowerForm: FC<EditFlowerFromProps> = ({ onFlowerUpdated }) => {
                     setName(updatedFlower.name || "")
                     setPrice(String(updatedFlower.price || ""))
                     setStockQuantity(String(updatedFlower.stock_quantity || ""))
-                    setDescription(updatedFlower.description || "")
-                    setCategory(updatedFlower.category || "")
                     setExistingImage(updatedFlower.image || "")
+                    setImage(null)
                 }
                 onFlowerUpdated(
                     typeof res.data?.message === "string"
@@ -171,26 +164,6 @@ const EditFlowerForm: FC<EditFlowerFromProps> = ({ onFlowerUpdated }) => {
                             value={stockQuantity}
                             onChange={(e) => setStockQuantity(e.target.value)}
                             errors={errors.stock_quantity}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <FloatingLabelInput
-                            label="Category"
-                            type="text"
-                            name="category"
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            errors={errors.category}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <FloatingLabelInput
-                            label="Description"
-                            type="text"
-                            name="description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            errors={errors.description}
                         />
                     </div>
                     <div className="mb-4">

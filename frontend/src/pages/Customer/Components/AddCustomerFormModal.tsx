@@ -64,10 +64,10 @@ const AddCustomerFormModal: FC<AddCustomerFormModalProps> = ({
             setErrors({});
 
             const formData = new FormData()
-            formData.append('name', name);
-            formData.append('contact', contact);
-            formData.append('address', address);
-            if (email) formData.append('email', email);
+            formData.append('name', name.trim());
+            formData.append('contact', contact.trim());
+            formData.append('address', address.trim());
+            if (email.trim()) formData.append('email', email.trim());
 
             const res = await CustomerService.storeCustomer(formData);
 
@@ -79,6 +79,7 @@ const AddCustomerFormModal: FC<AddCustomerFormModalProps> = ({
              setEmail("");
              setErrors({});
              refreshKey?.();
+             onClose();
             } else {
                 console.error(
                     "Unexpected status error occurred during adding customer:", 

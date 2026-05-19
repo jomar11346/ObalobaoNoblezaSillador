@@ -29,9 +29,7 @@ class FlowerController extends Controller
             'name' => ['required', 'min:3', 'max:100'],
             'price' => ['required', 'numeric', 'min:0'],
             'stock_quantity' => ['required', 'integer', 'min:0'],
-            'description' => ['nullable', 'max:500'],
             'image' => ['nullable', 'image', 'mimes:png,jpg,jpeg'],
-            'category' => ['required', 'max:50']
         ]);
 
         if ($request->hasFile('image')) {
@@ -47,9 +45,7 @@ class FlowerController extends Controller
             'name' => $validated['name'],
             'price' => $validated['price'],
             'stock_quantity' => $validated['stock_quantity'],
-            'description' => $validated['description'] ?? null,
             'image' => $validated['image'] ?? null,
-            'category' => $validated['category']
         ]);
 
         return response()->json([
@@ -72,9 +68,8 @@ class FlowerController extends Controller
             'name' => ['required', 'min:3', 'max:100'],
             'price' => ['required', 'numeric', 'min:0'],
             'stock_quantity' => ['required', 'integer', 'min:0'],
-            'description' => ['nullable', 'max:500'],
             'image' => ['nullable', 'image', 'mimes:png,jpg,jpeg'],
-            'category' => ['required', 'max:50']
+            'remove_image' => ['nullable', 'in:0,1'],
         ]);
 
         if ($request->has('remove_image') && $request->remove_image == '1') {
@@ -99,15 +94,14 @@ class FlowerController extends Controller
             'name' => $validated['name'],
             'price' => $validated['price'],
             'stock_quantity' => $validated['stock_quantity'],
-            'description' => $validated['description'] ?? null,
             'image' => $validated['image'] ?? $flower->image,
-            'category' => $validated['category']
         ]);
 
+        $flower->refresh();
         $flower->image = $flower->image ? url('storage/public/img/flower/image/' . $flower->image) : null;
 
         return response()->json([
-            'flower' => $flower->fresh(),
+            'flower' => $flower,
             'message' => 'Flower Successfully Updated.',
         ], 200);
     }

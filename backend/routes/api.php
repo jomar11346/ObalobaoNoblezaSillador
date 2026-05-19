@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/loadCustomers', 'loadCustomers');
         Route::post('/storeCustomer', 'storeCustomer');
         Route::post('/updateCustomer/{customer}', 'updateCustomer');
+        Route::put('/updateCustomer/{customer}', 'updateCustomer');
         Route::put('/destroyCustomer/{customer}', 'destroyCustomer');
     });
 

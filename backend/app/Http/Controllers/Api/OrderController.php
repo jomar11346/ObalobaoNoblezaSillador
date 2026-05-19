@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    private const NON_DELETABLE_STATUSES = ['Pending', 'Confirmed', 'Ready'];
+
     public function loadOrders(Request $request)
     {
         $search = $request->input('search');
@@ -106,26 +108,64 @@ class OrderController extends Controller
             'status' => ['required', 'in:Pending,Confirmed,Ready,Completed,Cancelled']
         ]);
 
-        $order->update([
-            'status' => $validated['status']
-        ]);
+        $newStatus = $validated['status'];
+        $oldStatus = $order->status;
 
-        return response()->json([
-            'message' => 'Order Status Successfully Updated.',
-            'order' => $order->fresh()
-        ], 200);
+        if ($newStatus === $oldStatus) {
+            return response()->json([
+                'message' => 'Order Status Successfully Updated.',
+                'order' => $order->fresh(['customer', 'orderItems.flower'])
+            ], 200);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $order->load('orderItems');
+
+            if ($newStatus === 'Cancelled' && $oldStatus !== 'Cancelled') {
+                $this->restoreOrderStock($order);
+            } elseif ($oldStatus === 'Cancelled' && $newStatus !== 'Cancelled') {
+                $stockError = $this->deductOrderStock($order);
+                if ($stockError !== null) {
+                    DB::rollBack();
+                    return response()->json(['message' => $stockError], 400);
+                }
+            }
+
+            $order->update([
+                'status' => $newStatus
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Order Status Successfully Updated.',
+                'order' => $order->fresh(['customer', 'orderItems.flower'])
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error updating order status: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroyOrder(Order $order)
     {
+        if (in_array($order->status, self::NON_DELETABLE_STATUSES, true)) {
+            return response()->json([
+                'message' => 'Orders with Pending, Confirmed, or Ready status cannot be deleted. Cancel or complete the order first.',
+            ], 403);
+        }
+
         DB::beginTransaction();
 
         try {
-            foreach ($order->orderItems as $item) {
-                $flower = Flower::find($item->flower_id);
-                $flower->update([
-                    'stock_quantity' => $flower->stock_quantity + $item->quantity
-                ]);
+            $order->load('orderItems');
+
+            if ($order->status !== 'Cancelled') {
+                $this->restoreOrderStock($order);
             }
 
             $order->update([
@@ -144,5 +184,37 @@ class OrderController extends Controller
                 'message' => 'Error deleting order: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function restoreOrderStock(Order $order): void
+    {
+        foreach ($order->orderItems as $item) {
+            $flower = Flower::find($item->flower_id);
+            if ($flower) {
+                $flower->increment('stock_quantity', $item->quantity);
+            }
+        }
+    }
+
+    private function deductOrderStock(Order $order): ?string
+    {
+        foreach ($order->orderItems as $item) {
+            $flower = Flower::find($item->flower_id);
+
+            if (!$flower) {
+                return 'One or more flowers in this order no longer exist.';
+            }
+
+            if ($flower->stock_quantity < $item->quantity) {
+                return "Insufficient stock for flower: {$flower->name}";
+            }
+        }
+
+        foreach ($order->orderItems as $item) {
+            $flower = Flower::find($item->flower_id);
+            $flower->decrement('stock_quantity', $item->quantity);
+        }
+
+        return null;
     }
 }

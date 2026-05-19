@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, useRef, type FC } from "react";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/Table"
 import Spinner from "../../../components/Spinner/Spinner";
 import OrderService from "../../../Services/OrderService";
-import type { OrderColumns } from "../../../interfaces/OrderInterface";
+import { canDeleteOrder, type OrderColumns } from "../../../interfaces/OrderInterface";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
 
 interface OrderListProps {
@@ -174,13 +174,22 @@ const OrderList: FC<OrderListProps> = ({ onAddOrder, onEditOrder, onDeleteOrder,
                                                 >
                                                     Edit Status
                                                 </button>
-                                                <button
-                                                    type="button"
-                                                    className="text-red-600 hover:underline"
-                                                    onClick={() => onDeleteOrder(order)}
-                                                >
-                                                    Delete
-                                                </button>
+                                                {canDeleteOrder(order.status) ? (
+                                                    <button
+                                                        type="button"
+                                                        className="text-red-600 hover:underline"
+                                                        onClick={() => onDeleteOrder(order)}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                ) : (
+                                                    <span
+                                                        className="text-gray-400 cursor-not-allowed"
+                                                        title="Cancel or complete the order before deleting"
+                                                    >
+                                                        Delete
+                                                    </span>
+                                                )}
                                             </div>
                                         </TableCell>
                                     </TableRow>
