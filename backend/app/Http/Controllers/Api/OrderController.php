@@ -6,12 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Flower;
+use App\Services\DailySaleSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
     private const NON_DELETABLE_STATUSES = ['Pending', 'Confirmed', 'Ready'];
+
+    public function __construct(
+        private DailySaleSyncService $dailySaleSyncService
+    ) {
+    }
 
     public function loadOrders(Request $request)
     {
@@ -137,6 +143,10 @@ class OrderController extends Controller
                 'status' => $newStatus
             ]);
 
+            if ($oldStatus === 'Completed' || $newStatus === 'Completed') {
+                $this->dailySaleSyncService->syncDate($order->order_date);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -168,9 +178,16 @@ class OrderController extends Controller
                 $this->restoreOrderStock($order);
             }
 
+            $wasCompleted = $order->status === 'Completed';
+            $orderDate = $order->order_date;
+
             $order->update([
                 'is_deleted' => true
             ]);
+
+            if ($wasCompleted) {
+                $this->dailySaleSyncService->syncDate($orderDate);
+            }
 
             DB::commit();
 

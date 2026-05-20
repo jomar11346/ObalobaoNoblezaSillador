@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 import DashboardService from "../../Services/DashboardService";
 import Spinner from "../../components/Spinner/Spinner";
 import PageHeader from "../../components/Brand/PageHeader";
+import ToastMessage from "../../components/ToastMessage/ToastMessage";
+import { useModal } from "../../hooks/useModal";
+import { useRefresh } from "../../hooks/useRefresh";
+import { useToastMessage } from "../../hooks/useToastMessage";
+import DailySalesList from "./components/DailySalesList";
+import DeleteDailySaleFormModal from "./components/DeleteDailySaleFormModal";
+import {
+    canDeleteDailySale,
+    type DailySaleColumns,
+} from "../../interfaces/DailySaleInterface";
 
 const DashboardPage = () => {
     const [loading, setLoading] = useState(false);
@@ -10,6 +20,22 @@ const DashboardPage = () => {
         low_stock_flowers: 0,
         pending_orders: 0,
     });
+
+    const {
+        message: toastMessage,
+        isVisible: toastMessageIsVisible,
+        showToastMessage,
+        closeToastMessage,
+    } = useToastMessage("", false, false);
+
+    const { refresh, handleRefresh } = useRefresh(false);
+
+    const {
+        isOpen: isDeleteDailySaleFormModalOpen,
+        selectedItem: selectedDailySaleForDelete,
+        openModal: openDeleteDailySaleFormModal,
+        closeModal: closeDeleteDailySaleFormModal,
+    } = useModal<DailySaleColumns>(false);
 
     const handleLoadDashboardStats = async () => {
         try {
@@ -32,6 +58,11 @@ const DashboardPage = () => {
 
     return (
         <>
+            <ToastMessage
+                message={toastMessage}
+                isVisible={toastMessageIsVisible}
+                onClose={closeToastMessage}
+            />
             <PageHeader
                 title="Dashboard"
                 subtitle="Overview of sales, stock, and orders at a glance."
@@ -60,6 +91,22 @@ const DashboardPage = () => {
                     <Spinner size="lg" />
                 </div>
             )}
+            <DeleteDailySaleFormModal
+                dailySale={selectedDailySaleForDelete}
+                onDailySaleDeleted={showToastMessage}
+                refreshKey={handleRefresh}
+                isOpen={isDeleteDailySaleFormModalOpen}
+                onClose={closeDeleteDailySaleFormModal}
+            />
+            <DailySalesList
+                refreshKey={refresh}
+                onDeleteDailySale={(dailySale) => {
+                    if (!canDeleteDailySale(dailySale)) {
+                        return;
+                    }
+                    openDeleteDailySaleFormModal(dailySale);
+                }}
+            />
         </>
     );
 };

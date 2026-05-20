@@ -50,6 +50,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::controller(DashboardController::class)->prefix('/dashboard')->group(function () {
         Route::get('/getDashboardStats', 'getDashboardStats');
+        Route::get('/loadDailySales', 'loadDailySales');
+        Route::post('/syncDailySales', 'syncDailySales');
+        Route::post('/storeDailySale', 'storeDailySale');
+        Route::put('/destroyDailySale/{dailySaleId}', 'destroyDailySale');
     });
 
     Route::controller(UserController::class)->prefix('/user')->group(function () {
