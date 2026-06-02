@@ -6,7 +6,11 @@ import CloseButton from "../../../components/Button/CloseButton";
 import OrderService from "../../../Services/OrderService";
 import CustomerService from "../../../Services/CustomerService";
 import FlowerService from "../../../Services/FlowerService";
-import type { OrderFieldErrors } from "../../../interfaces/OrderInterface";
+import {
+    getMinOrderDate,
+    isOrderDateInPast,
+    type OrderFieldErrors,
+} from "../../../interfaces/OrderInterface";
 import type { CustomerColumns } from "../../../interfaces/CustomerInterface";
 import type { FlowerColumns } from "../../../interfaces/FlowerInterface";
 
@@ -112,7 +116,11 @@ const AddOrderFormModal: FC<AddOrderFormModalProps> = ({
             const validationErrors: OrderFieldErrors = {};
 
             if (!customerId.trim()) validationErrors.customer_id = ["The customer field is required."];
-            if (!orderDate.trim()) validationErrors.order_date = ["The order date field is required."];
+            if (!orderDate.trim()) {
+                validationErrors.order_date = ["The order date field is required."];
+            } else if (isOrderDateInPast(orderDate)) {
+                validationErrors.order_date = ["The order date cannot be in the past."];
+            }
             if (orderItems.length === 0) validationErrors.items = ["At least one item is required."];
 
             if (Object.keys(validationErrors).length > 0) {
@@ -210,6 +218,7 @@ const AddOrderFormModal: FC<AddOrderFormModalProps> = ({
                         name="order_date"
                         value={orderDate}
                         onChange={(e) => setOrderDate(e.target.value)}
+                        min={getMinOrderDate()}
                         required
                         errors={errors.order_date}
                     />

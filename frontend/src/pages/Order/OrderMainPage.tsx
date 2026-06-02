@@ -69,7 +69,8 @@ const OrderMainPage = () => {
             <OrderList
              onAddOrder={openAddOrderFormModal} 
              onEditOrder={(order) => openEditOrderFormModal(order)}
-            onDeleteOrder={(order) => openDeleteOrderFormModal(order)} 
+            onDeleteOrder={(order) => openDeleteOrderFormModal(order)}
+             onNotify={showToastMessage}
              refreshKey={refresh} 
             />
         </>

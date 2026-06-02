@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FC } from "react";
 import DashboardService from "../../../Services/DashboardService";
-import {
-    canDeleteDailySale,
-    isAutoSyncedDailySale,
-} from "../../../interfaces/DailySaleInterface";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
 import Spinner from "../../../components/Spinner/Spinner";
 import {
@@ -17,7 +13,7 @@ import type { DailySaleColumns } from "../../../interfaces/DailySaleInterface";
 
 interface DailySalesListProps {
     refreshKey: boolean;
-    onDeleteDailySale: (dailySale: DailySaleColumns) => void;
+    onViewDailySale: (dailySale: DailySaleColumns) => void;
 }
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
@@ -35,7 +31,7 @@ const formatSaleDate = (saleDate: string) => {
     });
 };
 
-const DailySalesList: FC<DailySalesListProps> = ({ refreshKey, onDeleteDailySale }) => {
+const DailySalesList: FC<DailySalesListProps> = ({ refreshKey, onViewDailySale }) => {
     const [loadingList, setLoadingList] = useState(false);
     const [dailySales, setDailySales] = useState<DailySaleColumns[]>([]);
     const [search, setSearch] = useState("");
@@ -84,8 +80,7 @@ const DailySalesList: FC<DailySalesListProps> = ({ refreshKey, onDeleteDailySale
                 sale.sale_date,
                 formattedDate,
                 String(sale.amount),
-                sale.notes ?? "",
-                isAutoSyncedDailySale(sale) ? "auto" : "manual",
+                "completed",
             ]
                 .join(" ")
                 .toLowerCase();
@@ -94,29 +89,12 @@ const DailySalesList: FC<DailySalesListProps> = ({ refreshKey, onDeleteDailySale
         });
     }, [dailySales, debouncedSearch]);
 
-    const totalDailySales = filteredDailySales.reduce(
-        (sum, sale) => sum + parseFloat(String(sale.amount)),
-        0,
-    );
-
     return (
-        <section className="yb-panel mt-8 p-5">
-            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <h2 className="yb-eyebrow">Daily sales</h2>
-                </div>
-                <button
-                    type="button"
-                    className="yb-btn-primary"
-                    onClick={handleLoadDailySales}
-                    disabled={loadingList}
-                >
-                    Refresh
-                </button>
-            </div>
+        <section className="yb-panel p-5">
+            <h2 className="yb-eyebrow mb-4">Daily sales</h2>
 
-            <div className="mb-6 border-b border-[#2d2926]/10 pb-6">
-                <div className="w-full max-w-sm">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-[#2d2926]/10 pb-6">
+                <div className="min-w-[12rem] w-full max-w-sm flex-1">
                     <FloatingLabelInput
                         label="Search"
                         type="text"
@@ -126,6 +104,14 @@ const DailySalesList: FC<DailySalesListProps> = ({ refreshKey, onDeleteDailySale
                         autoFocus
                     />
                 </div>
+                <button
+                    type="button"
+                    className="yb-btn-primary shrink-0"
+                    onClick={handleLoadDailySales}
+                    disabled={loadingList}
+                >
+                    Refresh
+                </button>
             </div>
 
             <div className="yb-table-wrap">
@@ -142,11 +128,8 @@ const DailySalesList: FC<DailySalesListProps> = ({ refreshKey, onDeleteDailySale
                             <TableCell isHeader className="px-4 py-3 text-end">
                                 Amount
                             </TableCell>
-                            <TableCell isHeader className="px-4 py-3 text-start">
-                                Notes
-                            </TableCell>
                             <TableCell isHeader className="px-4 py-3 text-center">
-                                Source
+                                Status
                             </TableCell>
                             <TableCell isHeader className="px-4 py-3 text-center">
                                 Action
@@ -156,7 +139,7 @@ const DailySalesList: FC<DailySalesListProps> = ({ refreshKey, onDeleteDailySale
                     <TableBody className="yb-table-body divide-y divide-[#2d2926]/10">
                         {loadingList ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="px-4 py-6 text-center">
+                                <TableCell colSpan={5} className="px-4 py-6 text-center">
                                     <Spinner size="md" />
                                 </TableCell>
                             </TableRow>
@@ -177,44 +160,26 @@ const DailySalesList: FC<DailySalesListProps> = ({ refreshKey, onDeleteDailySale
                                     <TableCell className="px-4 py-3 text-end">
                                         ₱{parseFloat(String(sale.amount)).toFixed(2)}
                                     </TableCell>
-                                    <TableCell className="px-4 py-3 text-start">
-                                        {sale.notes?.trim() || "—"}
-                                    </TableCell>
                                     <TableCell className="px-4 py-3 text-center">
-                                        <span
-                                            className={
-                                                isAutoSyncedDailySale(sale)
-                                                    ? "yb-badge yb-badge-confirmed"
-                                                    : "yb-badge"
-                                            }
-                                        >
-                                            {isAutoSyncedDailySale(sale) ? "Auto" : "Manual"}
+                                        <span className="yb-badge yb-badge-confirmed">
+                                            Completed
                                         </span>
                                     </TableCell>
                                     <TableCell className="px-4 py-3 text-center">
-                                        {canDeleteDailySale(sale) ? (
-                                            <button
-                                                type="button"
-                                                className="text-red-600 hover:underline"
-                                                onClick={() => onDeleteDailySale(sale)}
-                                            >
-                                                Delete
-                                            </button>
-                                        ) : (
-                                            <span
-                                                className="text-gray-400"
-                                                title="Auto-synced sales cannot be deleted. Update or delete the related completed orders instead."
-                                            >
-                                                —
-                                            </span>
-                                        )}
+                                        <button
+                                            type="button"
+                                            className="text-[#2d2926] underline-offset-2 hover:underline"
+                                            onClick={() => onViewDailySale(sale)}
+                                        >
+                                            View
+                                        </button>
                                     </TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
                                 <TableCell
-                                    colSpan={6}
+                                    colSpan={5}
                                     className="px-4 py-6 text-center text-sm text-[#4a4541]"
                                 >
                                     {debouncedSearch

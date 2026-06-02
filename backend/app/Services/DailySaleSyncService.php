@@ -65,6 +65,19 @@ class DailySaleSyncService
         }
     }
 
+    public function currentMonthTotal(): float
+    {
+        $this->syncAll();
+
+        $now = Carbon::now();
+
+        return (float) DailySale::query()
+            ->where('tbl_daily_sales.is_deleted', false)
+            ->whereYear('sale_date', $now->year)
+            ->whereMonth('sale_date', $now->month)
+            ->sum('amount');
+    }
+
     private function findAutoSaleForDate(string $saleDate): ?DailySale
     {
         return DailySale::query()

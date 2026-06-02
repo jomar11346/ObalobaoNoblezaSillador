@@ -30,7 +30,7 @@ const FacebookLink: FC<FacebookLinkProps> = ({
       aria-label="Visit Yui Blooms on Facebook"
     >
       <FacebookIcon />
-      {showLabel && <span>Follow on Facebook</span>}
+      {showLabel && <span>Facebook</span>}
     </a>
   );
 };

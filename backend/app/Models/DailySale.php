@@ -9,7 +9,9 @@ class DailySale extends Model
 {
     use HasFactory;
 
-    public const AUTO_SYNC_NOTES = 'Auto-synced from completed orders';
+    public const AUTO_SYNC_NOTES = 'Completed';
+
+    public const LEGACY_AUTO_SYNC_NOTES = 'Auto-synced from completed orders';
 
     protected $table = 'tbl_daily_sales';
     protected $primaryKey = 'daily_sale_id';
@@ -30,7 +32,10 @@ class DailySale extends Model
 
         $notes = trim((string) $this->notes);
 
-        if ($notes !== '' && str_contains($notes, self::AUTO_SYNC_NOTES)) {
+        if ($notes !== '' && (
+            str_contains($notes, self::AUTO_SYNC_NOTES)
+            || str_contains($notes, self::LEGACY_AUTO_SYNC_NOTES)
+        )) {
             return true;
         }
 

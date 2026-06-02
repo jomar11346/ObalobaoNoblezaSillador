@@ -2,17 +2,22 @@ import { useCallback, useEffect, useState, useRef, type FC } from "react";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/Table"
 import Spinner from "../../../components/Spinner/Spinner";
 import OrderService from "../../../Services/OrderService";
-import { canDeleteOrder, type OrderColumns } from "../../../interfaces/OrderInterface";
+import {
+    canDeleteOrder,
+    formatOrderDate,
+    type OrderColumns,
+} from "../../../interfaces/OrderInterface";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
 
 interface OrderListProps {
     onAddOrder: () => void
     onEditOrder: (order: OrderColumns | null) => void
     onDeleteOrder: (order: OrderColumns | null) => void
+    onNotify: (message: string) => void
     refreshKey: boolean
 }
 
-const OrderList: FC<OrderListProps> = ({ onAddOrder, onEditOrder, onDeleteOrder, refreshKey }) => {
+const OrderList: FC<OrderListProps> = ({ onAddOrder, onEditOrder, onDeleteOrder, onNotify, refreshKey }) => {
     const [loadingOrders, setLoadingOrders] = useState(false);
     const [orders, setOrders] = useState<OrderColumns[]>([]);
     const [ordersTableCurrentPage, setOrdersTableCurrentPage] = useState(1);
@@ -20,8 +25,21 @@ const OrderList: FC<OrderListProps> = ({ onAddOrder, onEditOrder, onDeleteOrder,
     const [hasMore, setHasMore] = useState(true);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [downloadingReceiptId, setDownloadingReceiptId] = useState<number | null>(null);
 
     const tableRef = useRef<HTMLDivElement>(null);
+
+    const handleDownloadReceipt = async (orderId: number, customerName?: string) => {
+        try {
+            setDownloadingReceiptId(orderId);
+            await OrderService.downloadOrderReceipt(orderId, customerName);
+        } catch (error) {
+            console.error("Error downloading order receipt:", error);
+            onNotify("Failed to download order receipt.");
+        } finally {
+            setDownloadingReceiptId(null);
+        }
+    };
 
     const handleLoadOrders = async (page: number, append = false, search: string) => {
         try {
@@ -163,10 +181,25 @@ const OrderList: FC<OrderListProps> = ({ onAddOrder, onEditOrder, onDeleteOrder,
                                             </span>
                                         </TableCell>
                                         <TableCell className="px-4 py-3 text-start">
-                                            {order.order_date}
+                                            {formatOrderDate(order.order_date)}
                                         </TableCell>
                                         <TableCell className="px-4 py-3 text-center">
-                                            <div className="flex justify-center gap-4">
+                                            <div className="flex flex-wrap justify-center gap-3">
+                                                <button
+                                                    type="button"
+                                                    className="text-[#2d2926] hover:underline disabled:opacity-50"
+                                                    disabled={downloadingReceiptId === order.order_id}
+                                                    onClick={() =>
+                                                        handleDownloadReceipt(
+                                                            order.order_id,
+                                                            order.customer?.name,
+                                                        )
+                                                    }
+                                                >
+                                                    {downloadingReceiptId === order.order_id
+                                                        ? "Receipt..."
+                                                        : "Receipt"}
+                                                </button>
                                                 <button
                                                     type="button"
                                                     className="text-green-600 hover:underline"

@@ -7,6 +7,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Flower;
 use App\Services\DailySaleSyncService;
+use App\Services\MonthlySalesService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,7 +18,8 @@ class OrderController extends Controller
     private const NON_DELETABLE_STATUSES = ['Pending', 'Confirmed', 'Ready'];
 
     public function __construct(
-        private DailySaleSyncService $dailySaleSyncService
+        private DailySaleSyncService $dailySaleSyncService,
+        private MonthlySalesService $monthlySalesService
     ) {
     }
 
@@ -46,12 +50,16 @@ class OrderController extends Controller
 
     public function storeOrder(Request $request)
     {
+        $today = Carbon::now('Asia/Manila')->startOfDay()->toDateString();
+
         $validated = $request->validate([
             'customer_id' => ['required', 'exists:tbl_customers,customer_id'],
-            'order_date' => ['required', 'date'],
+            'order_date' => ['required', 'date', "after_or_equal:{$today}"],
             'items' => ['required', 'array', 'min:1'],
             'items.*.flower_id' => ['required', 'exists:tbl_flowers,flower_id'],
-            'items.*.quantity' => ['required', 'integer', 'min:1']
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+        ], [
+            'order_date.after_or_equal' => 'The order date cannot be in the past.',
         ]);
 
         DB::beginTransaction();
@@ -140,10 +148,18 @@ class OrderController extends Controller
             }
 
             $order->update([
-                'status' => $newStatus
+                'status' => $newStatus,
             ]);
 
-            if ($oldStatus === 'Completed' || $newStatus === 'Completed') {
+            $order->refresh();
+
+            if ($newStatus === 'Completed') {
+                $this->monthlySalesService->recordOrderSale($order);
+            } elseif ($newStatus === 'Cancelled') {
+                $this->monthlySalesService->removeOrderSale($order);
+            }
+
+            if ($oldStatus === 'Completed' || $newStatus === 'Completed' || $newStatus === 'Cancelled') {
                 $this->dailySaleSyncService->syncDate($order->order_date);
             }
 
@@ -159,6 +175,40 @@ class OrderController extends Controller
                 'message' => 'Error updating order status: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function downloadOrderReceipt(int $orderId)
+    {
+        $order = Order::with(['customer', 'orderItems.flower'])
+            ->where('order_id', $orderId)
+            ->where('is_deleted', false)
+            ->firstOrFail();
+
+        $generatedAt = now()->timezone(config('app.timezone', 'Asia/Manila'))
+            ->format('M d, Y h:i A');
+
+        $pdf = Pdf::loadView('receipts.order', [
+            'order' => $order,
+            'customer' => $order->customer,
+            'items' => $order->orderItems,
+            'generatedAt' => $generatedAt,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download($this->receiptFilename($order));
+    }
+
+    private function receiptFilename(Order $order): string
+    {
+        $customerName = trim((string) ($order->customer?->name ?? ''));
+
+        if ($customerName === '') {
+            return 'Customer.pdf';
+        }
+
+        $safeName = preg_replace('/[\/\\\\:*?"<>|]/', '', $customerName);
+        $safeName = preg_replace('/\s+/', ' ', trim($safeName));
+
+        return ($safeName !== '' ? $safeName : 'Customer').'.pdf';
     }
 
     public function destroyOrder(Order $order)
@@ -178,14 +228,19 @@ class OrderController extends Controller
                 $this->restoreOrderStock($order);
             }
 
-            $wasCompleted = $order->status === 'Completed';
             $orderDate = $order->order_date;
+            $wasCompleted = $order->status === 'Completed';
+            $wasCancelled = $order->status === 'Cancelled';
+
+            if ($wasCancelled) {
+                $this->monthlySalesService->removeOrderSale($order);
+            }
 
             $order->update([
-                'is_deleted' => true
+                'is_deleted' => true,
             ]);
 
-            if ($wasCompleted) {
+            if ($wasCompleted || $wasCancelled) {
                 $this->dailySaleSyncService->syncDate($orderDate);
             }
 

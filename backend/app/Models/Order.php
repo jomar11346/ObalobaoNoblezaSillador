@@ -19,7 +19,13 @@ class Order extends Model
         'total_amount',
         'status',
         'order_date',
+        'sales_recorded_at',
         'is_deleted',
+    ];
+
+    protected $casts = [
+        'sales_recorded_at' => 'datetime',
+        'order_date' => 'date:Y-m-d',
     ];
 
     public function customer(): BelongsTo

@@ -1,6 +1,9 @@
 export type DailySaleSource = "manual" | "auto";
 
-export const AUTO_SYNC_DAILY_SALE_NOTES = "Auto-synced from completed orders";
+export const AUTO_SYNC_DAILY_SALE_NOTES = "Completed";
+
+export const LEGACY_AUTO_SYNC_DAILY_SALE_NOTES =
+    "Auto-synced from completed orders";
 
 export function isAutoSyncedDailySale(
     sale: Pick<DailySaleColumns, "source" | "notes">,
@@ -11,7 +14,10 @@ export function isAutoSyncedDailySale(
 
     const notes = (sale.notes ?? "").trim().toLowerCase();
 
-    return notes.includes(AUTO_SYNC_DAILY_SALE_NOTES.toLowerCase());
+    return (
+        notes.includes(AUTO_SYNC_DAILY_SALE_NOTES.toLowerCase()) ||
+        notes.includes(LEGACY_AUTO_SYNC_DAILY_SALE_NOTES.toLowerCase())
+    );
 }
 
 export function canDeleteDailySale(
@@ -44,4 +50,25 @@ export interface DailySaleFieldErrors {
     sale_date?: string[];
     amount?: string[];
     notes?: string[];
+}
+
+export interface DailySaleFlowerLine {
+    flower_id: number;
+    flower_name: string;
+    total_quantity: number;
+    line_total: number;
+}
+
+export interface DailySaleFlowersResponse {
+    sale_date: string;
+    order_count: number;
+    flowers: DailySaleFlowerLine[];
+}
+
+export interface MonthlySaleColumns {
+    monthly_sale_id?: number;
+    year_month: string;
+    label: string;
+    amount: number;
+    order_count: number;
 }

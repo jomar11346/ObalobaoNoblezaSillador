@@ -1,6 +1,10 @@
 import type { FC, FormEvent } from "react";
 import Modal from "../../../components/Modal";
-import { canDeleteOrder, type OrderColumns } from "../../../interfaces/OrderInterface";
+import {
+    canDeleteOrder,
+    formatOrderDate,
+    type OrderColumns,
+} from "../../../interfaces/OrderInterface";
 import { useEffect, useState } from "react";
 import CloseButton from "../../../components/Button/CloseButton";
 import SubmitButton from "../../../components/Button/SubmitButton";
@@ -73,7 +77,7 @@ const DeleteOrderFormModal: FC<DeleteOrderFormModalProps> = ({
             setCustomerName(order.customer?.name || "");
             setTotalAmount(String(order.total_amount));
             setStatus(order.status);
-            setOrderDate(order.order_date);
+            setOrderDate(formatOrderDate(order.order_date));
         }
     }, [isOpen, order]);
 

@@ -7,6 +7,14 @@ const DashboardService = {
     loadDailySales: async () => {
         return AxiosInstance.get("/dashboard/loadDailySales");
     },
+    getDailySaleFlowers: async (saleDate: string) => {
+        return AxiosInstance.get("/dashboard/getDailySaleFlowers", {
+            params: { sale_date: saleDate },
+        });
+    },
+    loadMonthlySales: async () => {
+        return AxiosInstance.get("/dashboard/loadMonthlySales");
+    },
     syncDailySales: async () => {
         return AxiosInstance.post("/dashboard/syncDailySales");
     },
@@ -19,6 +27,9 @@ const DashboardService = {
     },
     destroyDailySale: async (dailySaleId: string | number) => {
         return AxiosInstance.put(`/dashboard/destroyDailySale/${dailySaleId}`);
+    },
+    destroyMonthlySale: async (yearMonth: string) => {
+        return AxiosInstance.put(`/dashboard/destroyMonthlySale/${yearMonth}`);
     },
 };
 

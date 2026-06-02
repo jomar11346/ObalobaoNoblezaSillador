@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import DashboardService from "../../Services/DashboardService";
 import Spinner from "../../components/Spinner/Spinner";
 import PageHeader from "../../components/Brand/PageHeader";
@@ -7,11 +7,17 @@ import { useModal } from "../../hooks/useModal";
 import { useRefresh } from "../../hooks/useRefresh";
 import { useToastMessage } from "../../hooks/useToastMessage";
 import DailySalesList from "./components/DailySalesList";
-import DeleteDailySaleFormModal from "./components/DeleteDailySaleFormModal";
-import {
-    canDeleteDailySale,
-    type DailySaleColumns,
-} from "../../interfaces/DailySaleInterface";
+import MonthlySalesList from "./components/MonthlySalesList";
+import DeleteMonthlySaleFormModal from "./components/DeleteMonthlySaleFormModal";
+import ViewDailySaleFormModal from "./components/ViewDailySaleFormModal";
+import type { DailySaleColumns, MonthlySaleColumns } from "../../interfaces/DailySaleInterface";
+
+const getCurrentSalesMonth = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+};
 
 const DashboardPage = () => {
     const [loading, setLoading] = useState(false);
@@ -19,7 +25,25 @@ const DashboardPage = () => {
         total_sales: 0,
         low_stock_flowers: 0,
         pending_orders: 0,
+        sales_month_label: "",
     });
+    const [trackedSalesMonth, setTrackedSalesMonth] = useState(getCurrentSalesMonth);
+
+    const { refresh, handleRefresh } = useRefresh(false);
+
+    const {
+        isOpen: isViewDailySaleFormModalOpen,
+        selectedItem: selectedDailySaleForView,
+        openModal: openViewDailySaleFormModal,
+        closeModal: closeViewDailySaleFormModal,
+    } = useModal<DailySaleColumns>(false);
+
+    const {
+        isOpen: isDeleteMonthlySaleFormModalOpen,
+        selectedItem: selectedMonthlySaleForDelete,
+        openModal: openDeleteMonthlySaleFormModal,
+        closeModal: closeDeleteMonthlySaleFormModal,
+    } = useModal<MonthlySaleColumns>(false);
 
     const {
         message: toastMessage,
@@ -28,33 +52,52 @@ const DashboardPage = () => {
         closeToastMessage,
     } = useToastMessage("", false, false);
 
-    const { refresh, handleRefresh } = useRefresh(false);
-
-    const {
-        isOpen: isDeleteDailySaleFormModalOpen,
-        selectedItem: selectedDailySaleForDelete,
-        openModal: openDeleteDailySaleFormModal,
-        closeModal: closeDeleteDailySaleFormModal,
-    } = useModal<DailySaleColumns>(false);
-
-    const handleLoadDashboardStats = async () => {
+    const handleLoadDashboardStats = useCallback(async () => {
         try {
             setLoading(true);
             const res = await DashboardService.getDashboardStats();
             if (res.status === 200) {
-                setStats(res.data);
+                setStats({
+                    total_sales: res.data.total_sales,
+                    low_stock_flowers: res.data.low_stock_flowers,
+                    pending_orders: res.data.pending_orders,
+                    sales_month_label: res.data.sales_month_label ?? "",
+                });
+                if (res.data.sales_month) {
+                    setTrackedSalesMonth(res.data.sales_month);
+                }
             }
         } catch (error) {
             console.error("Error loading dashboard stats:", error);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         document.title = "Yui Blooms — Dashboard";
-        handleLoadDashboardStats();
     }, []);
+
+    useEffect(() => {
+        handleLoadDashboardStats();
+    }, [refresh, handleLoadDashboardStats]);
+
+    useEffect(() => {
+        const intervalId = window.setInterval(() => {
+            const currentMonth = getCurrentSalesMonth();
+            if (currentMonth !== trackedSalesMonth) {
+                setTrackedSalesMonth(currentMonth);
+                handleLoadDashboardStats();
+                handleRefresh();
+            }
+        }, 60_000);
+
+        return () => window.clearInterval(intervalId);
+    }, [trackedSalesMonth, handleLoadDashboardStats, handleRefresh]);
+
+    const salesMonthCaption = stats.sales_month_label
+        ? `${stats.sales_month_label} · from daily sales this month`
+        : "This month · from daily sales";
 
     return (
         <>
@@ -73,7 +116,7 @@ const DashboardPage = () => {
                     <p className="yb-card-stat-value">
                         ₱{parseFloat(String(stats.total_sales)).toFixed(2)}
                     </p>
-                    <p className="mt-3 text-xs text-[#4a4541]">Completed orders only</p>
+                    <p className="mt-3 text-xs text-[#4a4541]">{salesMonthCaption}</p>
                 </article>
                 <article className="yb-card">
                     <p className="yb-card-stat-label">Low stock</p>
@@ -91,22 +134,30 @@ const DashboardPage = () => {
                     <Spinner size="lg" />
                 </div>
             )}
-            <DeleteDailySaleFormModal
-                dailySale={selectedDailySaleForDelete}
-                onDailySaleDeleted={showToastMessage}
+            <ViewDailySaleFormModal
+                dailySale={selectedDailySaleForView}
+                isOpen={isViewDailySaleFormModalOpen}
+                onClose={closeViewDailySaleFormModal}
+            />
+            <DeleteMonthlySaleFormModal
+                monthlySale={selectedMonthlySaleForDelete}
+                onMonthlySaleDeleted={showToastMessage}
                 refreshKey={handleRefresh}
-                isOpen={isDeleteDailySaleFormModalOpen}
-                onClose={closeDeleteDailySaleFormModal}
+                isOpen={isDeleteMonthlySaleFormModalOpen}
+                onClose={closeDeleteMonthlySaleFormModal}
             />
-            <DailySalesList
-                refreshKey={refresh}
-                onDeleteDailySale={(dailySale) => {
-                    if (!canDeleteDailySale(dailySale)) {
-                        return;
+            <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+                <DailySalesList
+                    refreshKey={refresh}
+                    onViewDailySale={openViewDailySaleFormModal}
+                />
+                <MonthlySalesList
+                    refreshKey={refresh}
+                    onDeleteMonthlySale={(monthlySale) =>
+                        openDeleteMonthlySaleFormModal(monthlySale)
                     }
-                    openDeleteDailySaleFormModal(dailySale);
-                }}
-            />
+                />
+            </div>
         </>
     );
 };

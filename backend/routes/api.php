@@ -43,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::controller(OrderController::class)->prefix('/order')->group(function () {
         Route::get('/loadOrders', 'loadOrders');
+        Route::get('/downloadOrderReceipt/{orderId}', 'downloadOrderReceipt');
         Route::post('/storeOrder', 'storeOrder');
         Route::post('/updateOrderStatus/{order}', 'updateOrderStatus');
         Route::put('/destroyOrder/{order}', 'destroyOrder');
@@ -50,10 +51,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::controller(DashboardController::class)->prefix('/dashboard')->group(function () {
         Route::get('/getDashboardStats', 'getDashboardStats');
+        Route::get('/getDailySaleFlowers', 'getDailySaleFlowers');
+        Route::get('/loadMonthlySales', 'loadMonthlySales');
         Route::get('/loadDailySales', 'loadDailySales');
         Route::post('/syncDailySales', 'syncDailySales');
         Route::post('/storeDailySale', 'storeDailySale');
         Route::put('/destroyDailySale/{dailySaleId}', 'destroyDailySale');
+        Route::put('/destroyMonthlySale/{yearMonth}', 'destroyMonthlySale');
     });
 
     Route::controller(UserController::class)->prefix('/user')->group(function () {

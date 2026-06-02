@@ -39,14 +39,12 @@ const FlowerMainPage = () => {
         onClose={closeToastMessage}
       />
       <PageHeader title="Flowers" subtitle="Manage inventory, pricing, and product images." />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
         <section className="yb-panel p-5">
           <h2 className="yb-eyebrow mb-4">Add flower</h2>
           <AddFlowerForm onFlowerAdded={showToastMessage} refreshKey={handleRefresh} />
         </section>
-        <section>
-          <FlowerList refreshKey={refresh} />
-        </section>
+        <FlowerList refreshKey={refresh} />
       </div>
     </>
   );
