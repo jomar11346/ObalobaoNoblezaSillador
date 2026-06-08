@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\Flower;
 use App\Services\DailySaleSyncService;
 use App\Services\MonthlySalesService;
+use App\Services\N8nWebhookService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,7 +20,8 @@ class OrderController extends Controller
 
     public function __construct(
         private DailySaleSyncService $dailySaleSyncService,
-        private MonthlySalesService $monthlySalesService
+        private MonthlySalesService $monthlySalesService,
+        private N8nWebhookService $n8nWebhookService
     ) {
     }
 
@@ -104,6 +106,9 @@ class OrderController extends Controller
 
             DB::commit();
 
+            $order->load(['customer', 'orderItems.flower']);
+            $this->n8nWebhookService->notifyNewOrder($order);
+
             return response()->json([
                 'message' => 'Order Successfully Created.'
             ], 200);
@@ -165,9 +170,15 @@ class OrderController extends Controller
 
             DB::commit();
 
+            $freshOrder = $order->fresh(['customer', 'orderItems.flower']);
+
+            if ($newStatus === 'Completed' && $oldStatus !== 'Completed') {
+                $this->n8nWebhookService->notifyOrderCompleted($freshOrder);
+            }
+
             return response()->json([
                 'message' => 'Order Status Successfully Updated.',
-                'order' => $order->fresh(['customer', 'orderItems.flower'])
+                'order' => $freshOrder
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();

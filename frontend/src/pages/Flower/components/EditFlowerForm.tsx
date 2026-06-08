@@ -2,6 +2,7 @@ import { useEffect, useState, type FC, type FormEvent } from "react";
 import BackButton from "../../../components/Button/BackButton";
 import SubmitButton from "../../../components/Button/SubmitButton"
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput"
+import UploadInput from "../../../components/Input/UploadInput";
 import FlowerService from "../../../Services/FlowerService";
 import { useParams } from "react-router-dom";
 import Spinner from "../../../components/Spinner/Spinner";
@@ -19,7 +20,7 @@ const EditFlowerForm: FC<EditFlowerFromProps> = ({ onFlowerUpdated }) => {
     const [price, setPrice] = useState("");
     const [stockQuantity, setStockQuantity] = useState("");
     const [image, setImage] = useState<File | null>(null);
-    const [existingImage, setExistingImage] = useState<string>("");
+    const [existingImage, setExistingImage] = useState<string | null>(null);
     const [removeImage, setRemoveImage] = useState("0");
     const [errors, setErrors] = useState<FlowerFieldErrors>({});
 
@@ -37,7 +38,7 @@ const EditFlowerForm: FC<EditFlowerFromProps> = ({ onFlowerUpdated }) => {
                     setName(flower.name || "")
                     setPrice(String(flower.price || ""))
                     setStockQuantity(String(flower.stock_quantity || ""))
-                    setExistingImage(flower.image || "")
+                    setExistingImage(flower.image || null)
                 }
             } else {
                 console.error('Unexpected error status occured during getting flower:', res.status)
@@ -84,8 +85,9 @@ const EditFlowerForm: FC<EditFlowerFromProps> = ({ onFlowerUpdated }) => {
                     setName(updatedFlower.name || "")
                     setPrice(String(updatedFlower.price || ""))
                     setStockQuantity(String(updatedFlower.stock_quantity || ""))
-                    setExistingImage(updatedFlower.image || "")
+                    setExistingImage(updatedFlower.image || null)
                     setImage(null)
+                    setRemoveImage("0")
                 }
                 onFlowerUpdated(
                     typeof res.data?.message === "string"
@@ -167,38 +169,23 @@ const EditFlowerForm: FC<EditFlowerFromProps> = ({ onFlowerUpdated }) => {
                         />
                     </div>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Current Image
-                        </label>
-                        {existingImage ? (
-                            <img src={existingImage} alt="Current flower" className="w-32 h-32 object-cover rounded mb-2" />
-                        ) : (
-                            <p className="text-gray-500 text-sm mb-2">No image</p>
-                        )}
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            New Image
-                        </label>
-                        <input
-                            type="file"
+                        <UploadInput
+                            label="Image"
                             name="image"
-                            accept="image/png,image/jpeg,image/jpg"
-                            onChange={(e) => setImage(e.target.files?.[0] || null)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={image}
+                            onChange={(file) => {
+                                setImage(file);
+                                if (file) {
+                                    setRemoveImage("0");
+                                }
+                            }}
+                            existingImageUrl={existingImage}
+                            onRemoveExistingImageUrl={() => {
+                                setExistingImage(null);
+                                setRemoveImage("1");
+                            }}
+                            errors={errors.image}
                         />
-                        {errors.image && (
-                            <p className="text-red-500 text-sm mt-1">{errors.image[0]}</p>
-                        )}
-                    </div>
-                    <div className="mb-4">
-                        <label className="flex items-center">
-                            <input
-                                type="checkbox"
-                                checked={removeImage === "1"}
-                                onChange={(e) => setRemoveImage(e.target.checked ? "1" : "0")}
-                                className="mr-2"
-                            />
-                            <span className="text-sm text-gray-700">Remove current image</span>
-                        </label>
                     </div>
                     <div className="flex justify-end gap-2">
                         {!loadingUpdate &&

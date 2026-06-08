@@ -9,12 +9,51 @@ use Illuminate\Support\Facades\Storage;
 
 class FlowerController extends Controller
 {
+    private const IMAGE_DISK = 'public';
+    private const IMAGE_PATH = 'img/flower/image';
+
+    private function flowerImageUrl(?string $filename): ?string
+    {
+        return $filename
+            ? Storage::disk(self::IMAGE_DISK)->url(self::IMAGE_PATH . '/' . $filename)
+            : null;
+    }
+
+    private function storeUploadedImage(Request $request, string $field = 'image'): ?string
+    {
+        if (!$request->hasFile($field)) {
+            return null;
+        }
+
+        $file = $request->file($field);
+        $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $extension = $file->getClientOriginalExtension();
+        $filenameToStore = sha1($filename . '_' . time() . '.' . $extension);
+
+        $file->storeAs(self::IMAGE_PATH, $filenameToStore, self::IMAGE_DISK);
+
+        return $filenameToStore;
+    }
+
+    private function deleteStoredImage(?string $filename): void
+    {
+        if (!$filename) {
+            return;
+        }
+
+        $path = self::IMAGE_PATH . '/' . $filename;
+
+        if (Storage::disk(self::IMAGE_DISK)->exists($path)) {
+            Storage::disk(self::IMAGE_DISK)->delete($path);
+        }
+    }
+
     public function loadFlowers() {
         $flowers = Flower::where('tbl_flowers.is_deleted', false)
             ->get();
 
         $flowers->transform(function ($flower) {
-            $flower->image = $flower->image ? url('storage/public/img/flower/image/' . $flower->image) : null;
+            $flower->image = $this->flowerImageUrl($flower->image);
             return $flower;
         });
 
@@ -32,20 +71,13 @@ class FlowerController extends Controller
             'image' => ['nullable', 'image', 'mimes:png,jpg,jpeg'],
         ]);
 
-        if ($request->hasFile('image')) {
-            $filenameWithExtension = $request->file('image');
-            $filename = pathinfo($filenameWithExtension->getClientOriginalName(), PATHINFO_FILENAME);
-            $extension = $filenameWithExtension->getClientOriginalExtension();
-            $filenameToStore = sha1($filename . '_' . time() . '.' . $extension);
-            $filenameWithExtension->storeAs('public/img/flower/image', $filenameToStore);
-            $validated['image'] = $filenameToStore;
-        }
+        $storedImage = $this->storeUploadedImage($request);
 
         Flower::create([
             'name' => $validated['name'],
             'price' => $validated['price'],
             'stock_quantity' => $validated['stock_quantity'],
-            'image' => $validated['image'] ?? null,
+            'image' => $storedImage,
         ]);
 
         return response()->json([
@@ -55,7 +87,7 @@ class FlowerController extends Controller
 
     public function getFlower($flowerID) {
         $flower = Flower::find($flowerID);
-        $flower->image = $flower->image ? url('storage/public/img/flower/image/' . $flower->image) : null;
+        $flower->image = $this->flowerImageUrl($flower->image);
 
         return response()->json([
             'flower' => $flower,
@@ -72,33 +104,25 @@ class FlowerController extends Controller
             'remove_image' => ['nullable', 'in:0,1'],
         ]);
 
-        if ($request->has('remove_image') && $request->remove_image == '1') {
-            if ($flower->image && Storage::exists('public/img/flower/image/' . $flower->image)) {
-                Storage::delete('public/img/flower/image/' . $flower->image);
-                $flower->image = null;
-            }
-        } else if ($request->hasFile('image')) {
-            if ($flower->image && Storage::exists('public/img/flower/image/' . $flower->image)) {
-                Storage::delete('public/img/flower/image/' . $flower->image);
-            }
+        $imageFilename = $flower->image;
 
-            $filenameWithExtension = $request->file('image');
-            $filename = pathinfo($filenameWithExtension->getClientOriginalName(), PATHINFO_FILENAME);
-            $extension = $filenameWithExtension->getClientOriginalExtension();
-            $filenameToStore = sha1($filename . '_' . time() . '.' . $extension);
-            $filenameWithExtension->storeAs('public/img/flower/image', $filenameToStore);
-            $validated['image'] = $filenameToStore;
+        if ($request->hasFile('image')) {
+            $this->deleteStoredImage($flower->image);
+            $imageFilename = $this->storeUploadedImage($request);
+        } elseif ($request->has('remove_image') && $request->remove_image == '1') {
+            $this->deleteStoredImage($flower->image);
+            $imageFilename = null;
         }
 
         $flower->update([
             'name' => $validated['name'],
             'price' => $validated['price'],
             'stock_quantity' => $validated['stock_quantity'],
-            'image' => $validated['image'] ?? $flower->image,
+            'image' => $imageFilename,
         ]);
 
         $flower->refresh();
-        $flower->image = $flower->image ? url('storage/public/img/flower/image/' . $flower->image) : null;
+        $flower->image = $this->flowerImageUrl($flower->image);
 
         return response()->json([
             'flower' => $flower,

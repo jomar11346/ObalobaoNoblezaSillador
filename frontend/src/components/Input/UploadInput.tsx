@@ -1,6 +1,5 @@
 import { type FC, useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import RemoveButton from "../Button/RemoveButton";
 
 interface UploadInputProps {
   label: string;
@@ -46,6 +45,20 @@ const UploadInput: FC<UploadInputProps> = ({ label, name, value, onChange, onRem
     }
   }, [value, existingImageUrl]);
 
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (value) {
+      onChange(null);
+    }
+
+    if (existingImageUrl && onRemoveExistingImageUrl) {
+      onRemoveExistingImageUrl();
+    }
+
+    setPreview(null);
+  };
+
   return (
     <div className="mb-1">
       <label htmlFor={name} className="block text-sm font-medium text-blue-600">
@@ -57,7 +70,17 @@ const UploadInput: FC<UploadInputProps> = ({ label, name, value, onChange, onRem
             <input {...getInputProps()} name={name} id={name} />
             <div className="flex flex-col items-center m-0">
               {preview ? (
-                <img src={preview} alt="Profile Picture Preview" className="object-cover rounder-full w-[185px] h-[185px]" />
+                <div className="relative inline-block">
+                  <img src={preview} alt="Image preview" className="object-cover rounded-lg w-[185px] h-[185px]" />
+                  <button
+                    type="button"
+                    onClick={handleRemove}
+                    className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white text-lg leading-none shadow hover:bg-red-700"
+                    aria-label="Remove image"
+                  >
+                    ×
+                  </button>
+                </div>
               ) : (
                 <>
                   <div className="mb-[22px] flex justify-center">
@@ -95,21 +118,6 @@ const UploadInput: FC<UploadInputProps> = ({ label, name, value, onChange, onRem
             <div className="mb-2">
               <span className="text-red-600 text-xs">{errors[0]}</span>
             </div>
-        )}
-        {preview && (
-          <RemoveButton
-            label="Remove Profile Picture"
-            className="w-full"
-            onRemove={() => {
-              if (onChange) {
-                onChange(null);
-              }
-              if (onRemoveExistingImageUrl) {
-                onRemoveExistingImageUrl();
-                setPreview(null);
-              }
-            }}
-          />
         )}
       </>
     </div>

@@ -1,6 +1,7 @@
 import { useState, type FC, type FormEvent, } from "react";
 import axios from "axios";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
+import UploadInput from "../../../components/Input/UploadInput";
 import SubmitButton from "../../../components/Button/SubmitButton";
 import FlowerService from "../../../Services/FlowerService";
 import type { FlowerFieldErrors } from "../../../interfaces/FlowerInterface";
@@ -119,19 +120,13 @@ const AddFlowerForm: FC<AddFlowerFormProps> = ({ onFlowerAdded, refreshKey }) =>
           />
         </div>
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Image
-          </label>
-          <input
-            type="file"
+          <UploadInput
+            label="Image"
             name="image"
-            accept="image/png,image/jpeg,image/jpg"
-            onChange={(e) => setImage(e.target.files?.[0] || null)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={image}
+            onChange={setImage}
+            errors={errors.image}
           />
-          {errors.image && (
-            <p className="text-red-500 text-sm mt-1">{errors.image[0]}</p>
-          )}
         </div>
         <div className="flex justify-end">
           <SubmitButton
